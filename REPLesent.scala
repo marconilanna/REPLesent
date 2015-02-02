@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-case class REPLesent(width: Int = 80, height: Int = 25, input: String = "REPLesent.txt") {
+case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent.txt") {
+	import scala.sys.process._
+	import scala.util.Try
+
 	case class Config(
 	  top: String = "*"
 	, bottom: String = "*"
@@ -44,13 +47,35 @@ case class REPLesent(width: Int = 80, height: Int = 25, input: String = "REPLese
 
 	private val newline = System.lineSeparator
 
+	private val (screenWidth, screenHeight) = screenSize(width, height)
+
 	private val deck: IndexedSeq[Slide] = parseFile(input)
 
 	private var cursor = -1
 
-	private def parseFile(file: String): IndexedSeq[Slide] = {
-		import scala.util.Try
+	def screenSize(width: Int, height: Int)  = {
+		if (width > 0 && height > 0) (width, height) else {
+			// Experimental support for screen size auto-detection.
+			// Supports only Unix-like systems, including Mac OS X and Linux.
+			// Does not work with Microsoft Windows.
+			val Array(h, w) = Try {
+				val stty = Seq("sh", "-c", "stty size < /dev/tty").!!
+				stty.trim.split(' ') map { _.toInt }
+			} getOrElse Array(0, 0)
 
+			val screenWidth = if (width > 0) width
+				else if (w > 0) w
+				else 80
+
+			val screenHeight = if (height > 0) height
+				else if (h > 0) h
+				else 25
+
+			(screenWidth, screenHeight)
+		}
+	}
+
+	private def parseFile(file: String): IndexedSeq[Slide] = {
 		Try {
 			val input = io.Source.fromFile(file).getLines
 			parse(input)
@@ -96,12 +121,12 @@ case class REPLesent(width: Int = 80, height: Int = 25, input: String = "REPLese
 		import config._
 
 		def fill(s: String) = if (s.isEmpty) s else {
-			val t = s * (width / s.length)
-			t + s.take(width - t.length)
+			val t = s * (screenWidth / s.length)
+			t + s.take(screenWidth - t.length)
 		}
 
-		val verticalSpace = height - 3 // accounts for header, footer, and REPL prompt
-		val horizontalSpace = width - sinistral.length - dextral.length
+		val verticalSpace = screenHeight - 3 // accounts for header, footer, and REPL prompt
+		val horizontalSpace = screenWidth - sinistral.length - dextral.length
 
 		val topPadding = (verticalSpace - slide.size) / 2
 		val bottomPadding = verticalSpace - topPadding - slide.content.size
@@ -176,7 +201,7 @@ case class REPLesent(width: Int = 80, height: Int = 25, input: String = "REPLese
 	def l = last
 	def >> = last
 
-	def blank = print(newline * height)
+	def blank = print(newline * screenHeight)
 	def b = blank
 
 	def help = print(helpMessage)

@@ -57,6 +57,10 @@ import replesent._
 Do not forget to replace `80, 25` with the actual size of your terminal window.
 Once all is done, type `f`, press `ENTER`, and follow the on-screen instructions.
 
+**Experimental screen size auto-detection:**
+For Unix-like systems, including Mac OS X and Linux, you can omit the screen size.
+Does not work for Microsoft Windows systems.
+
 > *I don't care if it is used, I just want it to be useful*
 
 License
