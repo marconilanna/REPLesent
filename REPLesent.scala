@@ -1,0 +1,185 @@
+/*
+ * Copyright 2015 Marconi Lanna
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+case class REPLesent(width: Int = 80, height: Int = 25, input: String = "REPLesent.txt") {
+	case class Config(
+	  top: String = "*"
+	, bottom: String = "*"
+	, sinistral: String = "* "
+	, dextral: String = " *"
+	)
+
+	// For slides that are part of a build, `size` and `maxLength` refer to the dimensions
+	// of the last step of the build and may differ from the slide `content` dimensions.
+	case class Slide(content: IndexedSeq[String], size: Int, maxLength: Int)
+
+	private val helpMessage = """Usage:
+		|  next          n      >     next slide
+		|  previous      p      <     previous slide
+		|  i next        i n          advance i slides
+		|  i previous    i p          go back i slides
+		|  i go          i g          go to slide i
+		|  first         f      <<    go to first slide
+		|  last          l      >>    go to last slide
+		|  blank         b            blank screen
+		|  help          h      ?     print this help message""".stripMargin
+
+	private val config = Config()
+
+	private val slideSeparator = "---"
+	private val fragmentSeparator = "--"
+
+	private val newline = System.lineSeparator
+
+	private val deck: IndexedSeq[Slide] = parseFile(input)
+
+	private var cursor = -1
+
+	private def parseFile(file: String): IndexedSeq[Slide] = {
+		import scala.util.Try
+
+		Try {
+			val input = io.Source.fromFile(file).getLines
+			parse(input)
+		} getOrElse {
+			println(s"Sorry, could not parse file $file. Quick, say something funny before anyone notices!")
+			IndexedSeq.empty
+		}
+	}
+
+	private def parse(input: Iterator[String]): IndexedSeq[Slide] = {
+		case class Acc(
+		  content: IndexedSeq[String] = IndexedSeq.empty
+		, fragments: IndexedSeq[Int] = IndexedSeq.empty
+		, deck: IndexedSeq[Slide] = IndexedSeq.empty
+		) {
+			def append(line: String) = copy(content = content :+ line)
+
+			def pushFragment = copy(fragments = fragments :+ content.size)
+
+			def pushSlide = {
+				val fragments = pushFragment.fragments
+				val maxLength = content.maxBy(_.length).length
+				val slides = fragments map { n =>
+					Slide(content.take(n), size = content.size, maxLength = maxLength)
+				}
+
+				Acc(deck = deck ++ slides)
+			}
+		}
+
+		val acc = (Acc() /: input) { (acc, line) =>
+			line match {
+				case `slideSeparator` => acc.pushSlide
+				case `fragmentSeparator` => acc.pushFragment
+				case _ => acc.append(line)
+			}
+		}.pushSlide
+
+		acc.deck
+	}
+
+	private def render(slide: Slide): String = {
+		import config._
+
+		def fill(s: String) = if (s.isEmpty) s else {
+			val t = s * (width / s.length)
+			t + s.take(width - t.length)
+		}
+
+		val verticalSpace = height - 3 // accounts for header, footer, and REPL prompt
+		val horizontalSpace = width - sinistral.length - dextral.length
+
+		val topPadding = (verticalSpace - slide.size) / 2
+		val bottomPadding = verticalSpace - topPadding - slide.content.size
+
+		val leftPadding = " " * ((horizontalSpace - slide.maxLength) / 2)
+
+		val blank = sinistral + {
+			if (dextral.isEmpty) newline
+			else (" " * horizontalSpace) + dextral + newline
+		}
+
+		val sb = StringBuilder.newBuilder
+
+		sb ++= fill(top) + newline
+		sb ++= blank * topPadding
+
+		slide.content foreach { line =>
+			sb ++= sinistral + leftPadding + line
+			if (dextral.nonEmpty)
+				sb ++= " " * (horizontalSpace - leftPadding.length - line.length) + dextral
+			sb ++= newline
+		}
+
+		sb ++= blank * bottomPadding
+		sb ++= fill(bottom)
+
+		sb.mkString
+	}
+
+	private def display(n: Int) = {
+		if (deck.isDefinedAt(n)) {
+			val slide = render(deck(n))
+			print(slide)
+		} else {
+			print("No slide for you")
+		}
+	}
+
+	private def jumpTo(n: Int) = {
+		// "Stops" the cursor one position after/before the last/first slide to avoid
+		// multiple next/previous calls taking it indefinitely away from the deck
+		cursor = if (n > deck.size) deck.size
+			else if (n < 0) -1
+			else n
+		display(cursor)
+	}
+
+	implicit class Ops(val i: Int) {
+		def next = jumpTo(cursor + i)
+		def n = next
+
+		def previous = jumpTo(cursor - i)
+		def p = previous
+
+		def go = jumpTo(i - 1)
+		def g = go
+	}
+
+	def next = 1.next
+	def n = next
+	def > = next
+
+	def previous = 1.previous
+	def p = previous
+	def < = previous
+
+	def first = 1.go
+	def f = first
+	def << = first
+
+	def last = deck.size.go
+	def l = last
+	def >> = last
+
+	def blank = print(newline * height)
+	def b = blank
+
+	def help = print(helpMessage)
+	def h = help
+	def ? = help
+}

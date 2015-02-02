@@ -1,0 +1,84 @@
+Welcome to REPLesent!
+
+REPLesent is a neat little tool to build presentations using the Scala REPL.
+
+It is a good alternative for talks with a live coding component.
+
+To continue, type the letter 'n' (no quotes) and then RETURN.
+---
+You can use 'n' to advance to the next slide.
+
+Let's try 'n' again to see it.
+---
+To go back to a previous slide, you can type 'p'.
+
+Try 'p' now to return to the last slide and
+then use 'n' twice to go to our next slide.
+
+But please be careful to not read and follow these instructions again.
+
+We do not want you to get stuck in a infinite loop between two slides.
+---
+Nice, I am glad you made your way to this slide.
+
+But you know, all that "use 'n' twice" business was a lot of effort.
+
+There should be a better way to advance two slides at once.
+
+And, as a matter of fact, there is!
+
+You should really try '2 n'. Go ahead, enter '2 n' and let's see what happens!
+---
+Holy cow, that was awesome!
+
+OK, let's try something new again.
+
+This time I want you to type 'l'.
+
+I'm not telling what it does.
+---
+OK, we have just skipped a slide.
+
+Aren't you curious to know what that slide had to tell us?
+
+We know we could use 'p' to read it, but let's try something different.
+
+The slide we missed was number 5.
+
+To jump to slide 5, just use the command '5 go'. Go!
+---
+Creating presentations is ultra easy.
+
+All you need is a plain text file. Anything you write in the file will be
+displayed on the screen, properly centered vertically and horizontally.
+
+To separate slides, just put three dashes (---) on a line by themselves.
+
+It is also possible to create "builds", where a slide is displayed by sections.
+
+Think bullet points in Powerpoint.
+
+Advance to the next slide to learn more about builds.
+---
+Builds are separated by two dashes (--) on a line by themselves.
+
+Type 'n' a few times to see how it works.
+--
+
+Step 1
+--
+
+Step 2
+--
+
+Step 3
+---
+Oh, noes! This is the last slide.
+
+And here ends our adventure.
+
+But I will leave you with one last command to try: 'h'.
+
+Good luck with that!
+
+And don't forget to go back to slide 7 to learn how to create your own presentations!

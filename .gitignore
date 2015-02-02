@@ -1,0 +1,35 @@
+# .gitignore
+
+# sbt
+target/
+
+# Logs
+*.log
+log/
+logs/
+
+# Temporary files
+*~
+*.bak
+*.old
+*.tmp
+nohup.out
+tmp/
+
+# vim
+.*.sw[a-z]
+
+# Eclipse
+.cache
+.classpath
+.project
+.scala_dependencies
+.settings/
+
+# Mac OS X
+._*
+.DS_Store
+
+# Windows
+Desktop.ini
+Thumbs.db
