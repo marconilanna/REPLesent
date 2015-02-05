@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent.txt") {
-  import scala.sys.process._
   import scala.util.Try
 
-  case class Config(
+  private case class Config(
     top: String = "*"
   , bottom: String = "*"
   , sinistral: String = "* "
@@ -27,7 +25,7 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
 
   // For slides that are part of a build, `size` and `maxLength` refer to the dimensions
   // of the last step of the build and may differ from the slide `content` dimensions.
-  case class Slide(content: IndexedSeq[String], size: Int, maxLength: Int)
+  private case class Slide(content: IndexedSeq[String], size: Int, maxLength: Int)
 
   private val helpMessage = """Usage:
     |  next          n      >     next slide
@@ -53,13 +51,16 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
 
   private var cursor = -1
 
-  def screenSize(width: Int, height: Int)  = {
+  private def screenSize(width: Int, height: Int)  = {
     if (width > 0 && height > 0) (width, height) else {
       // Experimental support for screen size auto-detection.
       // Supports only Unix-like systems, including Mac OS X and Linux.
       // Does not work with Microsoft Windows.
       val Array(h, w) = Try {
+        import scala.sys.process._
+
         val stty = Seq("sh", "-c", "stty size < /dev/tty").!!
+
         stty.trim.split(' ') map { _.toInt }
       } getOrElse Array(0, 0)
 
