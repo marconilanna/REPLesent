@@ -21,7 +21,8 @@ Getting Started
 REPLesent is distributed as a single `.scala` file and has no dependencies.
 
 REPLesent was designed to be used only in conjunction with the Scala REPL.
-It is not meant to be compiled as a standalone application, hence no `build.sbt`.
+It is not meant to be compiled as a standalone application
+(`build.sbt` is only for running the unit tests).
 
 We recommend you install and use the full Scala distribution
 (the `scala` command) instead of just the `sbt` console.
