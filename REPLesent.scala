@@ -96,14 +96,18 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
 
       def pushFragment = copy(fragments = fragments :+ content.size)
 
-      def pushSlide = {
-        val fragments = pushFragment.fragments
-        val maxLength = content.maxBy(_.length).length
-        val slides = fragments map { n =>
-          Slide(content.take(n), size = content.size, maxLength = maxLength)
-        }
+      def pushSlide: Acc = {
+        if (content.isEmpty) {
+          append("").pushSlide
+        } else {
+          val fragments = pushFragment.fragments
+          val maxLength = content.maxBy(_.length).length
+          val slides = fragments map { n =>
+            Slide(content.take(n), size = content.size, maxLength = maxLength)
+          }
 
-        Acc(deck = deck ++ slides)
+          Acc(deck = deck ++ slides)
+        }
       }
     }
 
