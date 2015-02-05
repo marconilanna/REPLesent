@@ -81,7 +81,7 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
       val input = io.Source.fromFile(file).getLines
       parse(input)
     } getOrElse {
-      println(s"Sorry, could not parse file $file. Quick, say something funny before anyone notices!")
+      Console.err.print(s"Sorry, could not parse file $file. Quick, say something funny before anyone notices!")
       IndexedSeq.empty
     }
   }
@@ -162,7 +162,7 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
       val slide = render(deck(n))
       print(slide)
     } else {
-      print("No slide for you")
+      Console.err.print("No slide for you")
     }
   }
 
