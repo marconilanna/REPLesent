@@ -1,6 +1,8 @@
 REPLesent
 =========
 
+[![Build Status](https://travis-ci.org/marconilanna/REPLesent.svg)](https://travis-ci.org/marconilanna/REPLesent)
+
 > **represent** *verb*
 >  0. depict, portray, render, delineate, show, illustrate.
 >  0. symbolize, stand for, personify, typify, embody.
