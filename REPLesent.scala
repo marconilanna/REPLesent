@@ -51,7 +51,7 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
 
   private var cursor = -1
 
-  private def screenSize(width: Int, height: Int)  = {
+  private def screenSize(width: Int, height: Int): (Int, Int) = {
     if (width > 0 && height > 0) (width, height) else {
       // Experimental support for screen size auto-detection.
       // Supports only Unix-like systems, including Mac OS X and Linux.
@@ -92,9 +92,9 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
     , fragments: IndexedSeq[Int] = IndexedSeq.empty
     , deck: IndexedSeq[Slide] = IndexedSeq.empty
     ) {
-      def append(line: String) = copy(content = content :+ line)
+      def append(line: String): Acc = copy(content = content :+ line)
 
-      def pushFragment = copy(fragments = fragments :+ content.size)
+      def pushFragment: Acc = copy(fragments = fragments :+ content.size)
 
       def pushSlide: Acc = {
         if (content.isEmpty) {
@@ -161,7 +161,7 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
     sb.mkString
   }
 
-  private def display(n: Int) = {
+  private def display(n: Int): Unit = {
     if (deck.isDefinedAt(n)) {
       val slide = render(deck(n))
       print(slide)
@@ -170,7 +170,7 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
     }
   }
 
-  private def jumpTo(n: Int) = {
+  private def jumpTo(n: Int): Unit = {
     // "Stops" the cursor one position after/before the last/first slide to avoid
     // multiple next/previous calls taking it indefinitely away from the deck
     cursor = if (n > deck.size) deck.size
@@ -180,36 +180,36 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
   }
 
   implicit class Ops(val i: Int) {
-    def next = jumpTo(cursor + i)
-    def n = next
+    def next: Unit = jumpTo(cursor + i)
+    def n: Unit = next
 
-    def previous = jumpTo(cursor - i)
-    def p = previous
+    def previous: Unit = jumpTo(cursor - i)
+    def p: Unit = previous
 
-    def go = jumpTo(i - 1)
-    def g = go
+    def go: Unit = jumpTo(i - 1)
+    def g: Unit = go
   }
 
-  def next = 1.next
-  def n = next
-  def > = next
+  def next: Unit = 1.next
+  def n: Unit = next
+  def > : Unit = next
 
-  def previous = 1.previous
-  def p = previous
-  def < = previous
+  def previous: Unit = 1.previous
+  def p: Unit = previous
+  def < : Unit = previous
 
-  def first = 1.go
-  def f = first
-  def << = first
+  def first: Unit = 1.go
+  def f: Unit = first
+  def << : Unit = first
 
-  def last = deck.size.go
-  def l = last
-  def >> = last
+  def last: Unit = deck.size.go
+  def l: Unit = last
+  def >> : Unit = last
 
-  def blank = print(newline * screenHeight)
-  def b = blank
+  def blank: Unit = print(newline * screenHeight)
+  def b: Unit = blank
 
-  def help = print(helpMessage)
-  def h = help
-  def ? = help
+  def help: Unit = print(helpMessage)
+  def h: Unit = help
+  def ? : Unit = help
 }
