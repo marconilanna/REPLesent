@@ -16,90 +16,136 @@
 import org.scalatest.FreeSpec
 
 class REPLesentSpec extends FreeSpec {
-  def testcase(file: String) = getClass.getResource(s"/test_$file.txt").getPath
+  case class Capture[A](result: A, output: String, error: String)
 
-  def captureOutput[T](f: => T): (T, String) = {
+  def capture[A](f: => A): Capture[A] = {
     val output = new java.io.ByteArrayOutputStream
+    val error = new java.io.ByteArrayOutputStream
 
     val result = Console.withOut(output) {
-      f
+      Console.withErr(error) {
+        f
+      }
     }
 
-    (result, output.toString)
+    Capture(result = result, output = output.toString, error = error.toString)
   }
 
-  def captureError[T](f: => T): (T, String) = {
-    val output = new java.io.ByteArrayOutputStream
+  def testFile(file: String): String = getClass.getResource(s"/test_$file.txt").getPath
 
-    val result = Console.withErr(output) {
-      f
-    }
+  val testWidth = 6
+  val testHeight = 6
 
-    (result, output.toString)
-  }
-
-  val empty5x4 =
-    """*****
-      |*   *
-      |*****""".stripMargin
-
-  val empty5x5 =
-    """*****
-      |*   *
-      |*   *
-      |*****""".stripMargin
+  val emptySlide =
+    """******
+      |*    *
+      |*    *
+      |*    *
+      |******""".stripMargin
 
   "Parsing and rendering:" - {
     "Empty input file" in {
-      val replesent = REPLesent(5, 4, testcase("empty"))
+      val parse = capture(REPLesent(testWidth, testHeight, testFile("empty")))
+      assert(parse.output.isEmpty)
+      assert(parse.error.isEmpty)
 
-      assert(captureOutput(replesent.first)._2 === empty5x4)
+      val replesent = parse.result
 
-      assert(captureError(replesent.next)._2.nonEmpty)
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === emptySlide)
+      assert(slide1.error.isEmpty)
+
+      val end = capture(replesent.next)
+      assert(end.output.isEmpty)
+      assert(end.error.nonEmpty)
     }
 
     "Single empty line" in {
-      val replesent = REPLesent(5, 4, testcase("single_empty_line"))
+      val parse = capture(REPLesent(testWidth, testHeight, testFile("single_empty_line")))
+      assert(parse.output.isEmpty)
+      assert(parse.error.isEmpty)
 
-      assert(captureOutput(replesent.first)._2 === empty5x4)
+      val replesent = parse.result
 
-      assert(captureError(replesent.next)._2.nonEmpty)
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === emptySlide)
+      assert(slide1.error.isEmpty)
+
+      val end = capture(replesent.next)
+      assert(end.output.isEmpty)
+      assert(end.error.nonEmpty)
     }
 
     "Single white space character (no EOL)" in {
-      val replesent = REPLesent(5, 4, testcase("single_white_space_no_newline"))
+      val parse = capture(REPLesent(testWidth, testHeight, testFile("single_white_space_no_newline")))
+      assert(parse.output.isEmpty)
+      assert(parse.error.isEmpty)
 
-      assert(captureOutput(replesent.first)._2 === empty5x4)
+      val replesent = parse.result
 
-      assert(captureError(replesent.next)._2.nonEmpty)
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === emptySlide)
+      assert(slide1.error.isEmpty)
+
+      val end = capture(replesent.next)
+      assert(end.output.isEmpty)
+      assert(end.error.nonEmpty)
     }
 
     "Single line with a single white space" in {
-      val replesent = REPLesent(5, 4, testcase("single_white_space"))
+      val parse = capture(REPLesent(testWidth, testHeight, testFile("single_white_space")))
+      assert(parse.output.isEmpty)
+      assert(parse.error.isEmpty)
 
-      assert(captureOutput(replesent.first)._2 === empty5x4)
+      val replesent = parse.result
 
-      assert(captureError(replesent.next)._2.nonEmpty)
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === emptySlide)
+      assert(slide1.error.isEmpty)
+
+      val end = capture(replesent.next)
+      assert(end.output.isEmpty)
+      assert(end.error.nonEmpty)
     }
 
     "Two empty slides" in {
-      val replesent = REPLesent(5, 4, testcase("two_empty_slides"))
+      val parse = capture(REPLesent(testWidth, testHeight, testFile("two_empty_slides")))
+      assert(parse.output.isEmpty)
+      assert(parse.error.isEmpty)
 
-      assert(captureOutput(replesent.first)._2 === empty5x4)
+      val replesent = parse.result
 
-      assert(captureOutput(replesent.next)._2 === empty5x4)
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === emptySlide)
+      assert(slide1.error.isEmpty)
 
-      assert(captureError(replesent.next)._2.nonEmpty)
+      val slide2 = capture(replesent.next)
+      assert(slide2.output === emptySlide)
+      assert(slide2.error.isEmpty)
+
+      val end = capture(replesent.next)
+      assert(end.output.isEmpty)
+      assert(end.error.nonEmpty)
     }
 
     "A single slide with two empty builds" in {
-      val replesent = REPLesent(5, 5, testcase("single_slide_two_empty_builds"))
+      val parse = capture(REPLesent(testWidth, testHeight, testFile("single_slide_two_empty_builds")))
+      assert(parse.output.isEmpty)
+      assert(parse.error.isEmpty)
 
-      assert(captureOutput(replesent.first)._2 === empty5x5)
+      val replesent = parse.result
 
-      assert(captureOutput(replesent.next)._2 === empty5x5)
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === emptySlide)
+      assert(slide1.error.isEmpty)
 
-      assert(captureError(replesent.next)._2.nonEmpty)
+      val slide2 = capture(replesent.next)
+      assert(slide2.output === emptySlide)
+      assert(slide2.error.isEmpty)
+
+      val end = capture(replesent.next)
+      assert(end.output.isEmpty)
+      assert(end.error.nonEmpty)
     }
   }
 }
