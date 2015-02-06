@@ -21,7 +21,33 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
   , bottom: String = "*"
   , sinistral: String = "* "
   , dextral: String = " *"
-  )
+  , newline: String = System.lineSeparator
+  , private val width: Int
+  , private val height: Int
+  ) {
+    val (screenWidth, screenHeight): (Int, Int) = {
+      val defaultWidth = 80
+      val defaultHeight = 25
+
+      if (width > 0 && height > 0) (width, height) else {
+        // Experimental support for screen size auto-detection.
+        // Supports only Unix-like systems, including Mac OS X and Linux.
+        // Does not work with Microsoft Windows.
+        val Array(h, w) = Try {
+          import scala.sys.process._
+
+          val stty = Seq("sh", "-c", "stty size < /dev/tty").!!
+
+          stty.trim.split(' ') map { _.toInt }
+        } getOrElse Array(0, 0)
+
+        val screenWidth = Seq(width, w).find(_ > 0) getOrElse defaultWidth
+        val screenHeight = Seq(height, h).find(_ > 0) getOrElse defaultHeight
+
+        (screenWidth, screenHeight)
+      }
+    }
+  }
 
   // For slides that are part of a build, `size` and `maxLength` refer to the dimensions
   // of the last step of the build and may differ from the slide `content` dimensions.
@@ -38,43 +64,11 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
     |  blank         b            blank screen
     |  help          h      ?     print this help message""".stripMargin
 
-  private val config = Config()
-
-  private val slideSeparator = "---"
-  private val fragmentSeparator = "--"
-
-  private val newline = System.lineSeparator
-
-  private val (screenWidth, screenHeight) = screenSize(width, height)
+  private val config = Config(width = width, height = height)
 
   private val deck: IndexedSeq[Slide] = parseFile(input)
 
   private var cursor = -1
-
-  private def screenSize(width: Int, height: Int): (Int, Int) = {
-    if (width > 0 && height > 0) (width, height) else {
-      // Experimental support for screen size auto-detection.
-      // Supports only Unix-like systems, including Mac OS X and Linux.
-      // Does not work with Microsoft Windows.
-      val Array(h, w) = Try {
-        import scala.sys.process._
-
-        val stty = Seq("sh", "-c", "stty size < /dev/tty").!!
-
-        stty.trim.split(' ') map { _.toInt }
-      } getOrElse Array(0, 0)
-
-      val screenWidth = if (width > 0) width
-        else if (w > 0) w
-        else 80
-
-      val screenHeight = if (height > 0) height
-        else if (h > 0) h
-        else 25
-
-      (screenWidth, screenHeight)
-    }
-  }
 
   private def parseFile(file: String): IndexedSeq[Slide] = {
     Try {
@@ -111,6 +105,9 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
       }
     }
 
+    val slideSeparator = "---"
+    val fragmentSeparator = "--"
+
     val acc = (Acc() /: input) { (acc, line) =>
       line match {
         case `slideSeparator` => acc.pushSlide
@@ -125,7 +122,7 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
   private def render(slide: Slide): String = {
     import config._
 
-    def fill(s: String) = if (s.isEmpty) s else {
+    def fill(s: String): String = if (s.isEmpty) s else {
       val t = s * (screenWidth / s.length)
       t + s.take(screenWidth - t.length)
     }
@@ -206,7 +203,7 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
   def l: Unit = last
   def >> : Unit = last
 
-  def blank: Unit = print(newline * screenHeight)
+  def blank: Unit = print(config.newline * config.screenHeight)
   def b: Unit = blank
 
   def help: Unit = print(helpMessage)
