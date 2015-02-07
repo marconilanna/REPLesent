@@ -2,6 +2,7 @@ REPLesent
 =========
 
 [![Build Status](https://travis-ci.org/marconilanna/REPLesent.svg)](https://travis-ci.org/marconilanna/REPLesent)
+[![Codacy Badge](https://www.codacy.com/project/badge/2ec4acaf2e424baab3d0cb53d20d9df9)](https://www.codacy.com/public/marconilanna/REPLesent)
 
 > **represent** *verb*
 >  0. depict, portray, render, delineate, show, illustrate.
