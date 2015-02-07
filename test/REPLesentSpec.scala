@@ -147,5 +147,106 @@ class REPLesentSpec extends FreeSpec {
       assert(end.output.isEmpty)
       assert(end.error.nonEmpty)
     }
+
+    "A minimal non-empty slide" in {
+      val (w, h) = (5, 4)
+
+      val expected =
+        """*****
+          |* a *
+          |*****""".stripMargin
+
+      val parse = capture(REPLesent(w, h, testFile("simple_slide")))
+      assert(parse.output.isEmpty)
+      assert(parse.error.isEmpty)
+
+      val replesent = parse.result
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === expected)
+      assert(slide1.error.isEmpty)
+
+      val end = capture(replesent.next)
+      assert(end.output.isEmpty)
+      assert(end.error.nonEmpty)
+    }
+
+    "A minimal slide with two non-empty builds" in {
+      val (w, h) = (5, 5)
+
+      val expected1 =
+        """*****
+          |* a *
+          |*   *
+          |*****""".stripMargin
+
+      val expected2 =
+        """*****
+          |* a *
+          |* b *
+          |*****""".stripMargin
+
+      val parse = capture(REPLesent(w, h, testFile("simple_build")))
+      assert(parse.output.isEmpty)
+      assert(parse.error.isEmpty)
+
+      val replesent = parse.result
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === expected1)
+      assert(slide1.error.isEmpty)
+
+      val slide2 = capture(replesent.next)
+      assert(slide2.output === expected2)
+      assert(slide2.error.isEmpty)
+
+      val end = capture(replesent.next)
+      assert(end.output.isEmpty)
+      assert(end.error.nonEmpty)
+    }
+
+    "A slide with two builds followed by another slide" in {
+      val (w, h) = (5, 5)
+
+      val expected1 =
+        """*****
+          |* a *
+          |*   *
+          |*****""".stripMargin
+
+      val expected2 =
+        """*****
+          |* a *
+          |* b *
+          |*****""".stripMargin
+
+      val expected3 =
+        """*****
+          |* c *
+          |*   *
+          |*****""".stripMargin
+
+      val parse = capture(REPLesent(w, h, testFile("two_builds_and_a_slide")))
+      assert(parse.output.isEmpty)
+      assert(parse.error.isEmpty)
+
+      val replesent = parse.result
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === expected1)
+      assert(slide1.error.isEmpty)
+
+      val slide2 = capture(replesent.next)
+      assert(slide2.output === expected2)
+      assert(slide2.error.isEmpty)
+
+      val slide3 = capture(replesent.next)
+      assert(slide3.output === expected3)
+      assert(slide3.error.isEmpty)
+
+      val end = capture(replesent.next)
+      assert(end.output.isEmpty)
+      assert(end.error.nonEmpty)
+    }
   }
 }
