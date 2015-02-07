@@ -727,4 +727,74 @@ class REPLesentSpec extends FreeSpec {
       assert(slide1.error.isEmpty)
     }
   }
+
+  "Navigation - Build:" - {
+    def slide(a: Char, b: Char = ' ') =
+      s"""*****
+         |* $a *
+         |* $b *
+         |*****""".stripMargin
+
+    val (w, h) = (5, 5)
+
+    "From first to last" in {
+      val replesent = REPLesent(w, h, testFile("navigation_build"))
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === slide('a'))
+      assert(slide1.error.isEmpty)
+
+      val slide2 = capture(replesent.next)
+      assert(slide2.output === slide('a', 'b'))
+      assert(slide2.error.isEmpty)
+
+      val slide3 = capture(replesent.next)
+      assert(slide3.output === slide('c'))
+      assert(slide3.error.isEmpty)
+
+      val slide4 = capture(replesent.next)
+      assert(slide4.output === slide('c', 'd'))
+      assert(slide4.error.isEmpty)
+    }
+
+    "From last to first" in {
+      val replesent = REPLesent(w, h, testFile("navigation_build"))
+
+      val slide4 = capture(replesent.last)
+      assert(slide4.output === slide('c', 'd'))
+      assert(slide4.error.isEmpty)
+
+      val slide3 = capture(replesent.previous)
+      assert(slide3.output === slide('c'))
+      assert(slide3.error.isEmpty)
+
+      val slide2 = capture(replesent.previous)
+      assert(slide2.output === slide('a', 'b'))
+      assert(slide2.error.isEmpty)
+
+      val slide1 = capture(replesent.previous)
+      assert(slide1.output === slide('a'))
+      assert(slide1.error.isEmpty)
+    }
+
+    "Go: first build of a slide" in {
+      val replesent = REPLesent(w, h, testFile("navigation_build"))
+
+      import replesent._
+
+      val slide2 = capture(3.go)
+      assert(slide2.output === slide('c'))
+      assert(slide2.error.isEmpty)
+    }
+
+    "Go: last build of a slide" in {
+      val replesent = REPLesent(w, h, testFile("navigation_build"))
+
+      import replesent._
+
+      val slide2 = capture(2.go)
+      assert(slide2.output === slide('a', 'b'))
+      assert(slide2.error.isEmpty)
+    }
+  }
 }
