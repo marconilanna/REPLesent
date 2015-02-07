@@ -409,4 +409,129 @@ class REPLesentSpec extends FreeSpec {
       assert(slide4.output === expected4)
     }
   }
+
+  "Alignment - Build:" - {
+    "Minimal screen dimensions" in {
+      val (w, h) = (7, 6)
+
+      val expected1 =
+        """*******
+          |* bb  *
+          |*     *
+          |*     *
+          |*******""".stripMargin
+
+      val expected2 =
+        """*******
+          |* bb  *
+          |* ccc *
+          |*     *
+          |*******""".stripMargin
+
+      val expected3 =
+        """*******
+          |* bb  *
+          |* ccc *
+          |* a   *
+          |*******""".stripMargin
+
+      val replesent = REPLesent(w, h, testFile("build_alignment"))
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === expected1)
+
+      val slide2 = capture(replesent.next)
+      assert(slide2.output === expected2)
+
+      val slide3 = capture(replesent.next)
+      assert(slide3.output === expected3)
+    }
+
+    "Even extra space" in {
+      val (w, h) = (9, 8)
+
+      val expected1 =
+        """*********
+          |*       *
+          |*  bb   *
+          |*       *
+          |*       *
+          |*       *
+          |*********""".stripMargin
+
+      val expected2 =
+        """*********
+          |*       *
+          |*  bb   *
+          |*  ccc  *
+          |*       *
+          |*       *
+          |*********""".stripMargin
+
+      val expected3 =
+        """*********
+          |*       *
+          |*  bb   *
+          |*  ccc  *
+          |*  a    *
+          |*       *
+          |*********""".stripMargin
+
+      val replesent = REPLesent(w, h, testFile("build_alignment"))
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === expected1)
+
+      val slide2 = capture(replesent.next)
+      assert(slide2.output === expected2)
+
+      val slide3 = capture(replesent.next)
+      assert(slide3.output === expected3)
+    }
+
+    "Odd extra space" in {
+      val (w, h) = (10, 9)
+
+      val expected1 =
+        """**********
+          |*        *
+          |*  bb    *
+          |*        *
+          |*        *
+          |*        *
+          |*        *
+          |**********""".stripMargin
+
+      val expected2 =
+        """**********
+          |*        *
+          |*  bb    *
+          |*  ccc   *
+          |*        *
+          |*        *
+          |*        *
+          |**********""".stripMargin
+
+      val expected3 =
+        """**********
+          |*        *
+          |*  bb    *
+          |*  ccc   *
+          |*  a     *
+          |*        *
+          |*        *
+          |**********""".stripMargin
+
+      val replesent = REPLesent(w, h, testFile("build_alignment"))
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === expected1)
+
+      val slide2 = capture(replesent.next)
+      assert(slide2.output === expected2)
+
+      val slide3 = capture(replesent.next)
+      assert(slide3.output === expected3)
+    }
+  }
 }
