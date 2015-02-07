@@ -536,7 +536,7 @@ class REPLesentSpec extends FreeSpec {
   }
 
   "Navigation - Slides:" - {
-    def slide(i: Int) =
+    def slide(i: Int): String =
       s"""*****
          |* $i *
          |*****""".stripMargin
@@ -729,7 +729,7 @@ class REPLesentSpec extends FreeSpec {
   }
 
   "Navigation - Build:" - {
-    def slide(a: Char, b: Char = ' ') =
+    def slide(a: Char, b: Char = ' '): String =
       s"""*****
          |* $a *
          |* $b *
