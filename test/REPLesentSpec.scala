@@ -534,4 +534,197 @@ class REPLesentSpec extends FreeSpec {
       assert(slide3.output === expected3)
     }
   }
+
+  "Navigation - Slides:" - {
+    def slide(i: Int) =
+      s"""*****
+         |* $i *
+         |*****""".stripMargin
+
+    val (w, h) = (5, 4)
+
+    "First" in {
+      val replesent = REPLesent(w, h, testFile("navigation"))
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === slide(1))
+      assert(slide1.error.isEmpty)
+    }
+
+    "Last" in {
+      val replesent = REPLesent(w, h, testFile("navigation"))
+
+      val slide5 = capture(replesent.last)
+      assert(slide5.output === slide(5))
+      assert(slide5.error.isEmpty)
+    }
+
+    "Next: to first slide" in {
+      val replesent = REPLesent(w, h, testFile("navigation"))
+
+      val slide1 = capture(replesent.next)
+      assert(slide1.output === slide(1))
+      assert(slide1.error.isEmpty)
+    }
+
+    "Next: from first to last" in {
+      val replesent = REPLesent(w, h, testFile("navigation"))
+
+      replesent.first
+
+      val slide2 = capture(replesent.next)
+      assert(slide2.output === slide(2))
+      assert(slide2.error.isEmpty)
+
+      val slide3 = capture(replesent.next)
+      assert(slide3.output === slide(3))
+      assert(slide3.error.isEmpty)
+
+      val slide4 = capture(replesent.next)
+      assert(slide4.output === slide(4))
+      assert(slide4.error.isEmpty)
+
+      val slide5 = capture(replesent.next)
+      assert(slide5.output === slide(5))
+      assert(slide5.error.isEmpty)
+    }
+
+    "Next: after last" in {
+      val replesent = REPLesent(w, h, testFile("navigation"))
+
+      replesent.last
+
+      val end = capture(replesent.next)
+      assert(end.output.isEmpty)
+      assert(end.error.nonEmpty)
+    }
+
+    "Previous: from last to first" in {
+      val replesent = REPLesent(w, h, testFile("navigation"))
+
+      replesent.last
+
+      val slide4 = capture(replesent.previous)
+      assert(slide4.output === slide(4))
+      assert(slide4.error.isEmpty)
+
+      val slide3 = capture(replesent.previous)
+      assert(slide3.output === slide(3))
+      assert(slide3.error.isEmpty)
+
+      val slide2 = capture(replesent.previous)
+      assert(slide2.output === slide(2))
+      assert(slide2.error.isEmpty)
+
+      val slide1 = capture(replesent.previous)
+      assert(slide1.output === slide(1))
+      assert(slide1.error.isEmpty)
+    }
+
+    "Previous: before first" in {
+      val replesent = REPLesent(w, h, testFile("navigation"))
+
+      replesent.first
+
+      val end = capture(replesent.previous)
+      assert(end.output.isEmpty)
+      assert(end.error.nonEmpty)
+    }
+
+    "Multiple next after last, then previous" in {
+      val replesent = REPLesent(w, h, testFile("navigation"))
+
+      replesent.last
+
+      val next1 = capture(replesent.next)
+      assert(next1.output.isEmpty)
+      assert(next1.error.nonEmpty)
+
+      val next2 = capture(replesent.next)
+      assert(next2.output.isEmpty)
+      assert(next2.error.nonEmpty)
+
+      val next3 = capture(replesent.next)
+      assert(next3.output.isEmpty)
+      assert(next3.error.nonEmpty)
+
+      val next = capture(replesent.previous)
+      assert(next.output === slide(5))
+      assert(next.error.isEmpty)
+    }
+
+    "Multiple previous before first, then next" in {
+      val replesent = REPLesent(w, h, testFile("navigation"))
+
+      replesent.first
+
+      val previous1 = capture(replesent.previous)
+      assert(previous1.output.isEmpty)
+      assert(previous1.error.nonEmpty)
+
+      val previous2 = capture(replesent.previous)
+      assert(previous2.output.isEmpty)
+      assert(previous2.error.nonEmpty)
+
+      val previous3 = capture(replesent.previous)
+      assert(previous3.output.isEmpty)
+      assert(previous3.error.nonEmpty)
+
+      val next = capture(replesent.next)
+      assert(next.output === slide(1))
+      assert(next.error.isEmpty)
+    }
+
+    "Go: inside limits" in {
+      val replesent = REPLesent(w, h, testFile("navigation"))
+
+      import replesent._
+
+      val slide2 = capture(2.go)
+      assert(slide2.output === slide(2))
+      assert(slide2.error.isEmpty)
+
+      val slide5 = capture(5.go)
+      assert(slide5.output === slide(5))
+      assert(slide5.error.isEmpty)
+    }
+
+    "Go: outside limits" in {
+      val replesent = REPLesent(w, h, testFile("navigation"))
+
+      import replesent._
+
+      val ahead = capture(99.go)
+      assert(ahead.output.isEmpty)
+      assert(ahead.error.nonEmpty)
+
+      val behind = capture(-99.go)
+      assert(behind.output.isEmpty)
+      assert(behind.error.nonEmpty)
+    }
+
+    "Go: jump ahead, then previous" in {
+      val replesent = REPLesent(w, h, testFile("navigation"))
+
+      import replesent._
+
+      99.go
+
+      val slide5 = capture(replesent.previous)
+      assert(slide5.output === slide(5))
+      assert(slide5.error.isEmpty)
+    }
+
+    "Go: jump behind, then next" in {
+      val replesent = REPLesent(w, h, testFile("navigation"))
+
+      import replesent._
+
+      -99.go
+
+      val slide1 = capture(replesent.next)
+      assert(slide1.output === slide(1))
+      assert(slide1.error.isEmpty)
+    }
+  }
 }
