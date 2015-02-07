@@ -41,8 +41,8 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
           stty.trim.split(' ') map { _.toInt }
         } getOrElse Array(0, 0)
 
-        val screenWidth = Seq(width, w).find(_ > 0) getOrElse defaultWidth
-        val screenHeight = Seq(height, h).find(_ > 0) getOrElse defaultHeight
+        val screenWidth = Seq(width, w) find { _ > 0 } getOrElse defaultWidth
+        val screenHeight = Seq(height, h) find { _ > 0 } getOrElse defaultHeight
 
         (screenWidth, screenHeight)
       }
@@ -127,18 +127,19 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
       t + s.take(screenWidth - t.length)
     }
 
+    val separator = " "
+
     val verticalSpace = screenHeight - 3 // accounts for header, footer, and REPL prompt
     val horizontalSpace = screenWidth - sinistral.length - dextral.length
 
     val topPadding = (verticalSpace - slide.size) / 2
     val bottomPadding = verticalSpace - topPadding - slide.content.size
 
-    val leftPadding = " " * ((horizontalSpace - slide.maxLength) / 2)
+    val leftPadding = separator * ((horizontalSpace - slide.maxLength) / 2)
 
     val blank = sinistral + {
-      if (dextral.isEmpty) newline
-      else (" " * horizontalSpace) + dextral + newline
-    }
+      if (dextral.isEmpty) "" else separator * horizontalSpace + dextral
+    } + newline
 
     val sb = StringBuilder.newBuilder
 
@@ -147,8 +148,12 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
 
     slide.content foreach { line =>
       sb ++= sinistral + leftPadding + line
-      if (dextral.nonEmpty)
-        sb ++= " " * (horizontalSpace - leftPadding.length - line.length) + dextral
+
+      if (dextral.nonEmpty) {
+        val rightPadding = horizontalSpace - leftPadding.length - line.length
+        sb ++= separator * rightPadding + dextral
+      }
+
       sb ++= newline
     }
 
@@ -168,11 +173,12 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
   }
 
   private def jumpTo(n: Int): Unit = {
+    import math.{max, min}
+
     // "Stops" the cursor one position after/before the last/first slide to avoid
     // multiple next/previous calls taking it indefinitely away from the deck
-    cursor = if (n > deck.size) deck.size
-      else if (n < 0) -1
-      else n
+    cursor =  max(-1, min(deck.size, n))
+
     display(cursor)
   }
 
