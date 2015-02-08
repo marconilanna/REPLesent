@@ -570,7 +570,7 @@ class REPLesentSpec extends FreeSpec {
     "Next: from first to last" in {
       val replesent = REPLesent(w, h, testFile("navigation"))
 
-      replesent.first
+      capture(replesent.first)
 
       val slide2 = capture(replesent.next)
       assert(slide2.output === slide(2))
@@ -592,7 +592,7 @@ class REPLesentSpec extends FreeSpec {
     "Next: after last" in {
       val replesent = REPLesent(w, h, testFile("navigation"))
 
-      replesent.last
+      capture(replesent.last)
 
       val end = capture(replesent.next)
       assert(end.output.isEmpty)
@@ -602,7 +602,7 @@ class REPLesentSpec extends FreeSpec {
     "Previous: from last to first" in {
       val replesent = REPLesent(w, h, testFile("navigation"))
 
-      replesent.last
+      capture(replesent.last)
 
       val slide4 = capture(replesent.previous)
       assert(slide4.output === slide(4))
@@ -624,7 +624,7 @@ class REPLesentSpec extends FreeSpec {
     "Previous: before first" in {
       val replesent = REPLesent(w, h, testFile("navigation"))
 
-      replesent.first
+      capture(replesent.first)
 
       val end = capture(replesent.previous)
       assert(end.output.isEmpty)
@@ -634,7 +634,7 @@ class REPLesentSpec extends FreeSpec {
     "Multiple next after last, then previous" in {
       val replesent = REPLesent(w, h, testFile("navigation"))
 
-      replesent.last
+      capture(replesent.last)
 
       val next1 = capture(replesent.next)
       assert(next1.output.isEmpty)
@@ -656,7 +656,7 @@ class REPLesentSpec extends FreeSpec {
     "Multiple previous before first, then next" in {
       val replesent = REPLesent(w, h, testFile("navigation"))
 
-      replesent.first
+      capture(replesent.first)
 
       val previous1 = capture(replesent.previous)
       assert(previous1.output.isEmpty)
@@ -708,7 +708,7 @@ class REPLesentSpec extends FreeSpec {
 
       import replesent._
 
-      99.go
+      capture(99.go)
 
       val slide5 = capture(replesent.previous)
       assert(slide5.output === slide(5))
@@ -720,7 +720,7 @@ class REPLesentSpec extends FreeSpec {
 
       import replesent._
 
-      -99.go
+      capture(-99.go)
 
       val slide1 = capture(replesent.next)
       assert(slide1.output === slide(1))
