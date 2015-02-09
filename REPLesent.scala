@@ -66,10 +66,14 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
     } + newline
   }
 
-  // `size` and `maxLength` refer to the dimensions of the slide last build
-  private case class Build(content: IndexedSeq[String], size: Int, maxLength: Int)
+  private case class Line(content: String, length: Int) {
+    override def toString = content
+  }
 
-  private case class Slide(content: IndexedSeq[String], builds: IndexedSeq[Int]) {
+  // `size` and `maxLength` refer to the dimensions of the slide last build
+  private case class Build(content: IndexedSeq[Line], size: Int, maxLength: Int)
+
+  private case class Slide(content: IndexedSeq[Line], builds: IndexedSeq[Int]) {
     private val maxLength = content.maxBy(_.length).length
 
     def lastBuild: Int = builds.size - 1
@@ -129,6 +133,8 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
     |  blank         b            blank screen
     |  help          h      ?     print this help message""".stripMargin
 
+  private val colorEscape = """\\.""".r
+
   private val config = Config(width = width, height = height)
 
   private val deck = Deck(parseFile(input))
@@ -143,13 +149,49 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
     }
   }
 
+  private def parse(line: String): Line = {
+    import scala.io.AnsiColor._
+
+    var length = line.length
+    var ansi = false
+
+    val content = colorEscape replaceAllIn (line, m => m.matched(1) match {
+        case '\\' => length -= 1; "\\\\"
+        case 'B' => length -= 2; ansi = true; BLUE_B
+        case 'b' => length -= 2; ansi = true; BLUE
+        case 'C' => length -= 2; ansi = true; CYAN_B
+        case 'c' => length -= 2; ansi = true; CYAN
+        case 'G' => length -= 2; ansi = true; GREEN_B
+        case 'g' => length -= 2; ansi = true; GREEN
+        case 'K' => length -= 2; ansi = true; BLACK_B
+        case 'k' => length -= 2; ansi = true; BLACK
+        case 'M' => length -= 2; ansi = true; MAGENTA_B
+        case 'm' => length -= 2; ansi = true; MAGENTA
+        case 'R' => length -= 2; ansi = true; RED_B
+        case 'r' => length -= 2; ansi = true; RED
+        case 's' => length -= 2; RESET
+        case 'W' => length -= 2; ansi = true; WHITE_B
+        case 'w' => length -= 2; ansi = true; WHITE
+        case 'Y' => length -= 2; ansi = true; YELLOW_B
+        case 'y' => length -= 2; ansi = true; YELLOW
+        case '!' => length -= 2; ansi = true; REVERSED
+        case '*' => length -= 2; ansi = true; BOLD
+        case '_' => length -= 2; ansi = true; UNDERLINED
+        case c => "\\\\" + c
+    })
+
+    val reset = if (ansi) RESET else ""
+
+    Line(content = content + reset, length = length)
+  }
+
   private def parse(input: Iterator[String]): IndexedSeq[Slide] = {
     case class Acc(
-      content: IndexedSeq[String] = IndexedSeq.empty
+      content: IndexedSeq[Line] = IndexedSeq.empty
     , builds: IndexedSeq[Int] = IndexedSeq.empty
     , deck: IndexedSeq[Slide] = IndexedSeq.empty
     ) {
-      def append(line: String): Acc = copy(content = content :+ line)
+      def append(line: String): Acc = copy(content = content :+ parse(line))
 
       def pushBuild: Acc = copy(builds = builds :+ content.size)
 

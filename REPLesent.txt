@@ -73,6 +73,28 @@ Step 2
 
 Step 3
 ---
+\rOh \gmy \bgosh, \cit's \mfull \yof \wcolors\r!\g!\b!\c!\m!\y!\w!\k!
+
+ANSI color escape codes:
+\\r \rred\s    \\g \ggreen\s    \\b \bblue
+\\c \ccyan\s   \\m \mmagenta\s  \\y \yyellow
+\\k \kblack\s  \\w \wwhite
+
+\\* is for \*bold\s. You can combine it with colors, too:
+   \*\rred\s       \*\ggreen\s       \*\bblue
+   \*\ccyan\s      \*\mmagenta\s     \*\yyellow
+   \*\kblack\s     \*\wwhite
+
+Capital letters set background color:
+\\R \Rred\s    \\G \Ggreen\s    \\B \Bblue
+\\C \Ccyan\s   \\M \Mmagenta\s  \\Y \Yyellow
+\\K \Kblack\s  \\W \Wwhite
+
+Use \\_ for \_underline\s and \\! for \!reverse\s.
+\\s resets everything back to normal, whatever your normal is.
+Use double slashes (\\\\) to escape slashes.
+Anything else, like \z, is unaffected.
+---
 Oh, noes! This is the last slide.
 
 And here ends our adventure.

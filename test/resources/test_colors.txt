@@ -1,0 +1,18 @@
+\r red \g green \b blue
+\c cyan \m magenta \y yellow
+\k black \w white
+
+\*\r red \g green \b blue
+\*\c cyan \m magenta \y yellow
+\*\k black \w white
+
+\R red \G green \B blue
+\C cyan \M magenta \Y yellow
+\K black \W white
+
+\_underline\s reset \!reverse
+
+\\r escaped
+\\\r red
+\\\\r escaped
+\z unaffected

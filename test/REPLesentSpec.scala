@@ -1250,4 +1250,36 @@ class REPLesentSpec extends FreeSpec {
       }
     }
   }
+
+  "ANSI Colors" in {
+    import scala.io.AnsiColor._
+
+    val expected =
+      s"""***************************
+        |* $RED red $GREEN green $BLUE blue$RESET       *
+        |* $CYAN cyan $MAGENTA magenta $YELLOW yellow$RESET  *
+        |* $BLACK black $WHITE white$RESET           *
+        |*                         *
+        |* $BOLD$RED red $GREEN green $BLUE blue$RESET       *
+        |* $BOLD$CYAN cyan $MAGENTA magenta $YELLOW yellow$RESET  *
+        |* $BOLD$BLACK black $WHITE white$RESET           *
+        |*                         *
+        |* $RED_B red $GREEN_B green $BLUE_B blue$RESET       *
+        |* $CYAN_B cyan $MAGENTA_B magenta $YELLOW_B yellow$RESET  *
+        |* $BLACK_B black $WHITE_B white$RESET           *
+        |*                         *
+        |* ${UNDERLINED}underline$RESET reset ${REVERSED}reverse$RESET *
+        |*                         *
+        |* \\r escaped              *
+        |* \\$RED red$RESET                   *
+        |* \\\\r escaped             *
+        |* \\z unaffected           *
+        |***************************""".stripMargin
+
+    val replesent = REPLesent(27, 21, testFile("colors"))
+
+    val colors = capture(replesent.first)
+    assert(colors.output === expected)
+    assert(colors.error.isEmpty)
+  }
 }
