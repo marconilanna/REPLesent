@@ -1,4 +1,4 @@
-\gWelcome to REPLesent!
+| \gWelcome to REPLesent!
 
 REPLesent is a neat little tool to build presentations
 using the Scala REPL.
@@ -77,6 +77,29 @@ Type '\bn\s' a few times to see how it works.
 --
 
 \*\wPhase 3\s: Profit
+---
+| \gLine alignment
+
+Lines can be easily aligned.
+
+The longest line (like this one for instance) is used to set the slide size.
+You can align relative to this centered slide "box" or to the screen.
+
+Just start a line with one of the following commands.
+Please note that the space at the end is mandatory.
+
+<< '\r<< \s' flushes the line to the left of the screen.
+
+< '\r< \s' aligns the line to the left of the slide. This is the default.
+
+| '\r| \s' centers the line on the screen.
+
+> '\r> \s' aligns the line to the right of the slide.
+
+>> '\r>> \s' flushes the line to the right of the screen.
+
+All whitespace other than the one following the alignment command is
+preserved, so you can easily align text manually if needed.
 ---
 \rOh \gmy \bgosh, \cit's \mfull \yof \wcolors\r!\g!\b!\c!\m!\y!\w!\k!
 

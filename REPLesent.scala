@@ -66,8 +66,119 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
     } + newline
   }
 
-  private case class Line(content: String, length: Int) {
+  private val config = Config(width = width, height = height)
+
+  private case class Line(content: String, length: Int, private val alignment: Line.Alignment) {
     override def toString = content
+    def alignTo(margin: Int): String = alignment(this, margin)
+  }
+
+  private object Line {
+    protected sealed trait Alignment {
+      private def blank = config.whiteSpace
+
+      protected def space = config.horizontalSpace
+
+      protected def fill(line: Line, left: Int, right: Int): String = {
+        blank * left  + line + blank * right
+      }
+
+      def apply(line: Line, margin: Int): String
+    }
+
+    object LeftFlushed extends Alignment {
+      def apply(line: Line, ignored: Int): String = {
+        val left = 0
+        val right = space - line.length
+
+        fill(line, left, right)
+      }
+    }
+
+    object LeftAligned extends Alignment {
+      def apply(line: Line, margin: Int): String = {
+        val left = margin / 2
+        val right = space - left - line.length
+
+        fill(line, left, right)
+      }
+    }
+
+    object Centered extends Alignment {
+      def apply(line: Line, ignored: Int): String = {
+        val margin = space - line.length
+
+        val left = margin / 2
+        val right = margin - left
+
+        fill(line, left, right)
+      }
+    }
+
+    object RightAligned extends Alignment {
+      def apply(line: Line, margin: Int): String = {
+        val right = (margin + 1) / 2
+        val left = space - right - line.length
+
+        fill(line, left, right)
+      }
+    }
+
+    object RightFlushed extends Alignment {
+      def apply(line: Line, ignored: Int): String = {
+        val left = space - line.length
+        val right = 0
+
+        fill(line, left, right)
+      }
+    }
+
+    private val colorEscape = """\\.""".r
+
+    def apply(line: String): Line = {
+      import scala.io.AnsiColor._
+
+      val (_line, alignment): (String, Alignment) = line match {
+        case s if s startsWith "<< " => (s.drop(3), LeftFlushed)
+        case s if s startsWith "< " => (s.drop(2), LeftAligned)
+        case s if s startsWith "| " => (s.drop(2), Centered)
+        case s if s startsWith "> " => (s.drop(2), RightAligned)
+        case s if s startsWith ">> " => (s.drop(3), RightFlushed)
+        case s => (s, LeftAligned)
+      }
+
+      var length = _line.length
+      var ansi = false
+
+      val content: String = colorEscape replaceAllIn (_line, m => m.matched(1) match {
+        case '\\' => length -= 1; "\\\\"
+        case 'B' => length -= 2; ansi = true; BLUE_B
+        case 'b' => length -= 2; ansi = true; BLUE
+        case 'C' => length -= 2; ansi = true; CYAN_B
+        case 'c' => length -= 2; ansi = true; CYAN
+        case 'G' => length -= 2; ansi = true; GREEN_B
+        case 'g' => length -= 2; ansi = true; GREEN
+        case 'K' => length -= 2; ansi = true; BLACK_B
+        case 'k' => length -= 2; ansi = true; BLACK
+        case 'M' => length -= 2; ansi = true; MAGENTA_B
+        case 'm' => length -= 2; ansi = true; MAGENTA
+        case 'R' => length -= 2; ansi = true; RED_B
+        case 'r' => length -= 2; ansi = true; RED
+        case 's' => length -= 2; RESET
+        case 'W' => length -= 2; ansi = true; WHITE_B
+        case 'w' => length -= 2; ansi = true; WHITE
+        case 'Y' => length -= 2; ansi = true; YELLOW_B
+        case 'y' => length -= 2; ansi = true; YELLOW
+        case '!' => length -= 2; ansi = true; REVERSED
+        case '*' => length -= 2; ansi = true; BOLD
+        case '_' => length -= 2; ansi = true; UNDERLINED
+        case c => "\\\\" + c
+      })
+
+      val reset = if (ansi) RESET else ""
+
+      Line(content = content + reset, length = length, alignment = alignment)
+    }
   }
 
   // `size` and `maxLength` refer to the dimensions of the slide last build
@@ -133,10 +244,6 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
     |  blank         b            blank screen
     |  help          h      ?     print this help message""".stripMargin
 
-  private val colorEscape = """\\.""".r
-
-  private val config = Config(width = width, height = height)
-
   private val deck = Deck(parseFile(input))
 
   private def parseFile(file: String): IndexedSeq[Slide] = {
@@ -149,49 +256,13 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
     }
   }
 
-  private def parse(line: String): Line = {
-    import scala.io.AnsiColor._
-
-    var length = line.length
-    var ansi = false
-
-    val content = colorEscape replaceAllIn (line, m => m.matched(1) match {
-        case '\\' => length -= 1; "\\\\"
-        case 'B' => length -= 2; ansi = true; BLUE_B
-        case 'b' => length -= 2; ansi = true; BLUE
-        case 'C' => length -= 2; ansi = true; CYAN_B
-        case 'c' => length -= 2; ansi = true; CYAN
-        case 'G' => length -= 2; ansi = true; GREEN_B
-        case 'g' => length -= 2; ansi = true; GREEN
-        case 'K' => length -= 2; ansi = true; BLACK_B
-        case 'k' => length -= 2; ansi = true; BLACK
-        case 'M' => length -= 2; ansi = true; MAGENTA_B
-        case 'm' => length -= 2; ansi = true; MAGENTA
-        case 'R' => length -= 2; ansi = true; RED_B
-        case 'r' => length -= 2; ansi = true; RED
-        case 's' => length -= 2; RESET
-        case 'W' => length -= 2; ansi = true; WHITE_B
-        case 'w' => length -= 2; ansi = true; WHITE
-        case 'Y' => length -= 2; ansi = true; YELLOW_B
-        case 'y' => length -= 2; ansi = true; YELLOW
-        case '!' => length -= 2; ansi = true; REVERSED
-        case '*' => length -= 2; ansi = true; BOLD
-        case '_' => length -= 2; ansi = true; UNDERLINED
-        case c => "\\\\" + c
-    })
-
-    val reset = if (ansi) RESET else ""
-
-    Line(content = content + reset, length = length)
-  }
-
   private def parse(input: Iterator[String]): IndexedSeq[Slide] = {
     case class Acc(
       content: IndexedSeq[Line] = IndexedSeq.empty
     , builds: IndexedSeq[Int] = IndexedSeq.empty
     , deck: IndexedSeq[Slide] = IndexedSeq.empty
     ) {
-      def append(line: String): Acc = copy(content = content :+ parse(line))
+      def append(line: String): Acc = copy(content = content :+ Line(line))
 
       def pushBuild: Acc = copy(builds = builds :+ content.size)
 
@@ -227,7 +298,7 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
     val topPadding = (verticalSpace - build.size) / 2
     val bottomPadding = verticalSpace - topPadding - build.content.size
 
-    val leftPadding = whiteSpace * ((horizontalSpace - build.maxLength) / 2)
+    val margin = horizontalSpace - build.maxLength
 
     val sb = StringBuilder.newBuilder
 
@@ -235,13 +306,9 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
     sb ++= blankLine * topPadding
 
     build.content foreach { line =>
-      sb ++= sinistral + leftPadding + line
-
-      if (dextral.nonEmpty) {
-        val rightPadding = horizontalSpace - leftPadding.length - line.length
-        sb ++= whiteSpace * rightPadding + dextral
-      }
-
+      sb ++= sinistral
+      sb ++= line.alignTo(margin)
+      sb ++= dextral
       sb ++= newline
     }
 

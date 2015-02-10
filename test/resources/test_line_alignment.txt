@@ -1,0 +1,17 @@
+a very long line
+<< left flushed
+< forced left
+default left
+| centered
+| centered!
+> right
+>> right flushed
+---
+a very long line!
+<< left flushed
+< forced left
+default left
+| centered
+| centered!
+> right
+>> right flushed

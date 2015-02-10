@@ -1282,4 +1282,78 @@ class REPLesentSpec extends FreeSpec {
     assert(colors.output === expected)
     assert(colors.error.isEmpty)
   }
+
+  "Line alignment" - {
+    "Odd horizontal space" in {
+      val expected1 =
+        """*************************
+          |*   a very long line    *
+          |* left flushed          *
+          |*   forced left         *
+          |*   default left        *
+          |*       centered        *
+          |*       centered!       *
+          |*              right    *
+          |*         right flushed *
+          |*************************""".stripMargin
+
+      val expected2 =
+        """*************************
+          |*   a very long line!   *
+          |* left flushed          *
+          |*   forced left         *
+          |*   default left        *
+          |*       centered        *
+          |*       centered!       *
+          |*               right   *
+          |*         right flushed *
+          |*************************""".stripMargin
+
+      val replesent = REPLesent(25, 11, testFile("line_alignment"))
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === expected1)
+      assert(slide1.error.isEmpty)
+
+      val slide2 = capture(replesent.next)
+      assert(slide2.output === expected2)
+      assert(slide2.error.isEmpty)
+    }
+
+    "Even horizontal space" in {
+      val expected1 =
+        """**************************
+          |*    a very long line    *
+          |* left flushed           *
+          |*    forced left         *
+          |*    default left        *
+          |*        centered        *
+          |*       centered!        *
+          |*               right    *
+          |*          right flushed *
+          |**************************""".stripMargin
+
+      val expected2 =
+        """**************************
+          |*   a very long line!    *
+          |* left flushed           *
+          |*   forced left          *
+          |*   default left         *
+          |*        centered        *
+          |*       centered!        *
+          |*               right    *
+          |*          right flushed *
+          |**************************""".stripMargin
+
+      val replesent = REPLesent(26, 11, testFile("line_alignment"))
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === expected1)
+      assert(slide1.error.isEmpty)
+
+      val slide2 = capture(replesent.next)
+      assert(slide2.output === expected2)
+      assert(slide2.error.isEmpty)
+    }
+  }
 }
