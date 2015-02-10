@@ -150,28 +150,30 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
       var length = _line.length
       var ansi = false
 
+      def color(c: String) = { length -= 2; ansi = true; c }
+
       val content: String = colorEscape replaceAllIn (_line, m => m.matched(1) match {
         case '\\' => length -= 1; "\\\\"
-        case 'B' => length -= 2; ansi = true; BLUE_B
-        case 'b' => length -= 2; ansi = true; BLUE
-        case 'C' => length -= 2; ansi = true; CYAN_B
-        case 'c' => length -= 2; ansi = true; CYAN
-        case 'G' => length -= 2; ansi = true; GREEN_B
-        case 'g' => length -= 2; ansi = true; GREEN
-        case 'K' => length -= 2; ansi = true; BLACK_B
-        case 'k' => length -= 2; ansi = true; BLACK
-        case 'M' => length -= 2; ansi = true; MAGENTA_B
-        case 'm' => length -= 2; ansi = true; MAGENTA
-        case 'R' => length -= 2; ansi = true; RED_B
-        case 'r' => length -= 2; ansi = true; RED
+        case 'b' => color(BLUE)
+        case 'B' => color(BLUE_B)
+        case 'c' => color(CYAN)
+        case 'C' => color(CYAN_B)
+        case 'g' => color(GREEN)
+        case 'G' => color(GREEN_B)
+        case 'k' => color(BLACK)
+        case 'K' => color(BLACK_B)
+        case 'm' => color(MAGENTA)
+        case 'M' => color(MAGENTA_B)
+        case 'r' => color(RED)
+        case 'R' => color(RED_B)
         case 's' => length -= 2; RESET
-        case 'W' => length -= 2; ansi = true; WHITE_B
-        case 'w' => length -= 2; ansi = true; WHITE
-        case 'Y' => length -= 2; ansi = true; YELLOW_B
-        case 'y' => length -= 2; ansi = true; YELLOW
-        case '!' => length -= 2; ansi = true; REVERSED
-        case '*' => length -= 2; ansi = true; BOLD
-        case '_' => length -= 2; ansi = true; UNDERLINED
+        case 'w' => color(WHITE)
+        case 'W' => color(WHITE_B)
+        case 'y' => color(YELLOW)
+        case 'Y' => color(YELLOW_B)
+        case '!' => color(REVERSED)
+        case '*' => color(BOLD)
+        case '_' => color(UNDERLINED)
         case c => "\\\\" + c
       })
 
