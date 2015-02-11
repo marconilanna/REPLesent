@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent.txt") {
+case class REPLesent(
+  width: Int = 0
+, height: Int = 0
+, input: String = "REPLesent.txt"
+, slideCounter: Boolean = false
+, slideTotal: Boolean = false
+) {
   import scala.util.Try
 
   private case class Config(
@@ -184,21 +190,34 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
   }
 
   // `size` and `maxLength` refer to the dimensions of the slide last build
-  private case class Build(content: IndexedSeq[Line], size: Int, maxLength: Int)
+  private case class Build(content: IndexedSeq[Line], size: Int, maxLength: Int, footer: Line)
 
   private case class Slide(content: IndexedSeq[Line], builds: IndexedSeq[Int]) {
     private val maxLength = content.maxBy(_.length).length
 
     def lastBuild: Int = builds.size - 1
     def hasBuild(n: Int): Boolean = builds.isDefinedAt(n)
-    def build(n: Int): Build = Build(content.take(builds(n)), content.size, maxLength)
+    def build(n: Int, footer: Line): Build = Build(content.take(builds(n)), content.size, maxLength, footer)
   }
 
   private case class Deck(slides: IndexedSeq[Slide]) {
     private var slideCursor = -1
     private var buildCursor = 0
 
+    private def currentSlideIsDefined: Boolean = slides.isDefinedAt(slideCursor)
     private def currentSlide: Slide = slides(slideCursor)
+
+    private def footer: Line = {
+      val sb = StringBuilder.newBuilder
+      if (slideCounter) {
+        sb ++= ">> " + (slideCursor + 1)
+
+        if (slideTotal) sb ++= "/" + slides.size
+
+        sb ++= " "
+      }
+      Line(sb.mkString)
+    }
 
     private def select(slide: Int = slideCursor, build: Int = 0): Option[Build] = {
       import math.{max, min}
@@ -208,11 +227,9 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
       slideCursor = max(-1, min(slides.size, slide))
       buildCursor = build
 
-      if (slides.isDefinedAt(slideCursor) && currentSlide.hasBuild(buildCursor)) {
-        Some(currentSlide.build(buildCursor))
-      } else {
-        None
-      }
+      if (currentSlideIsDefined && currentSlide.hasBuild(buildCursor)) {
+        Some(currentSlide.build(buildCursor, footer))
+      } else None
     }
 
     def jumpTo(n: Int): Option[Build] = select(slide = n)
@@ -304,17 +321,25 @@ case class REPLesent(width: Int = 0, height: Int = 0, input: String = "REPLesent
 
     val sb = StringBuilder.newBuilder
 
-    sb ++= topRow
-    sb ++= blankLine * topPadding
-
-    build.content foreach { line =>
+    def render(line: Line) = {
       sb ++= sinistral
       sb ++= line.alignTo(margin)
       sb ++= dextral
       sb ++= newline
     }
 
-    sb ++= blankLine * bottomPadding
+    sb ++= topRow
+    sb ++= blankLine * topPadding
+
+    build.content foreach render
+
+    if (slideCounter && bottomPadding > 0) {
+      sb ++= blankLine * (bottomPadding - 1)
+      render(build.footer)
+    } else {
+      sb ++= blankLine * bottomPadding
+    }
+
     sb ++= bottomRow
 
     sb.mkString

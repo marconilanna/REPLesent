@@ -1283,7 +1283,7 @@ class REPLesentSpec extends FreeSpec {
     assert(colors.error.isEmpty)
   }
 
-  "Line alignment" - {
+  "Line alignment:" - {
     "Odd horizontal space" in {
       val expected1 =
         """*************************
@@ -1354,6 +1354,40 @@ class REPLesentSpec extends FreeSpec {
       val slide2 = capture(replesent.next)
       assert(slide2.output === expected2)
       assert(slide2.error.isEmpty)
+    }
+  }
+
+  "Slide counter:" - {
+    "Without total" in {
+      val replesent = REPLesent(7, 6, testFile("slide_counter"), true)
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output contains "*  1  *")
+
+      val slide2 = capture(replesent.next)
+      assert(slide2.output contains "*  2  *")
+
+      val slide3 = capture(replesent.next)
+      assert(slide3.output contains "*  2  *")
+
+      val slide4 = capture(replesent.next)
+      assert(slide4.output contains "*  3  *")
+    }
+
+    "With total" in {
+      val replesent = REPLesent(9, 6, testFile("slide_counter"), true, true)
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output contains "*  1/3  *")
+
+      val slide2 = capture(replesent.next)
+      assert(slide2.output contains "*  2/3  *")
+
+      val slide3 = capture(replesent.next)
+      assert(slide3.output contains "*  2/3  *")
+
+      val slide4 = capture(replesent.next)
+      assert(slide4.output contains "*  3/3  *")
     }
   }
 }
