@@ -1357,6 +1357,79 @@ class REPLesentSpec extends FreeSpec {
     }
   }
 
+  "Horizontal Ruler:" - {
+    import scala.io.AnsiColor._
+
+    "Full Screen" in {
+      val (w, h) = (16, 3)
+
+      val expected1 =
+        """****************
+          |* ------------ *
+          |****************""".stripMargin
+
+      val expected2 =
+        s"""****************
+          |* $RED-=$BLUE-=-$RESET$RED-=$BLUE-=-$RESET$RED-=$RESET *
+          |****************""".stripMargin
+
+      val expected3 =
+        """****************
+          |* -+--+--+--+- *
+          |****************""".stripMargin
+
+      val replesent = REPLesent(w, h, testFile("horizontal_ruler_full_screen"))
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === expected1)
+      assert(slide1.error.isEmpty)
+
+      val slide2 = capture(replesent.next)
+      assert(slide2.output === expected2)
+      assert(slide2.error.isEmpty)
+
+      val slide3 = capture(replesent.next)
+      assert(slide3.output === expected3)
+      assert(slide3.error.isEmpty)
+    }
+
+    "Slide" in {
+      val (w, h) = (16, 5)
+
+      val expected1 =
+        """****************
+          |*    lipsum    *
+          |*    ------    *
+          |****************""".stripMargin
+
+      val expected2 =
+        s"""****************
+          |*    lipsum    *
+          |*    $RED-=$BLUE-=-$RESET$RED-$RESET    *
+          |****************""".stripMargin
+
+      val expected3 =
+        """****************
+          |*    lipsum    *
+          |*    -+--+-    *
+          |****************""".stripMargin
+
+      val replesent = REPLesent(w, h, testFile("horizontal_ruler_slide"))
+
+      val slide1 = capture(replesent.first)
+      assert(slide1.output === expected1)
+      assert(slide1.error.isEmpty)
+
+      val slide2 = capture(replesent.next)
+      assert(slide2.output === expected2)
+      assert(slide2.error.isEmpty)
+
+      val slide3 = capture(replesent.next)
+      assert(slide3.output === expected3)
+      assert(slide3.error.isEmpty)
+    }
+  }
+
   "Slide counter:" - {
     "Without total" in {
       val replesent = REPLesent(7, 6, testFile("slide_counter"), true)

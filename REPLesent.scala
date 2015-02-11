@@ -92,6 +92,23 @@ case class REPLesent(
       def apply(line: Line, margin: Int): String
     }
 
+    object HorizontalRuler extends Alignment {
+      def apply(line: Line, margin: Int): String = {
+        val width = space - margin
+        val content: String = line.toString * (width / line.length)
+        val newLine: Line = Line(content + content.take(width - content.length))
+        val left = margin / 2
+        val right = margin - left
+        fill(newLine, left, right)
+      }
+    }
+
+    object FullScreenHorizontalRuler extends Alignment {
+      def apply(line: Line, ignored: Int): String = {
+        HorizontalRuler(line, 0)
+      }
+    }
+
     private object LeftFlushed extends Alignment {
       def apply(line: Line, ignored: Int): String = {
         val left = 0
@@ -147,6 +164,8 @@ case class REPLesent(
       case s if s startsWith "| " => (s.drop(2), Centered)
       case s if s startsWith "> " => (s.drop(2), RightAligned)
       case s if s startsWith ">> " => (s.drop(3), RightFlushed)
+      case s if s startsWith "// " => (s.drop(3), FullScreenHorizontalRuler)
+      case s if s startsWith "/ " => (s.drop(2), HorizontalRuler)
       case s: String => (s, LeftAligned)
     }
 
