@@ -75,7 +75,7 @@ case class REPLesent(
   private val config = Config(width = width, height = height)
 
   private case class Line(content: String, length: Int, private val alignment: Line.Alignment) {
-    override def toString = content
+    override def toString: String = content
     def alignTo(margin: Int): String = alignment(this, margin)
   }
 
@@ -92,7 +92,7 @@ case class REPLesent(
       def apply(line: Line, margin: Int): String
     }
 
-    object LeftFlushed extends Alignment {
+    private object LeftFlushed extends Alignment {
       def apply(line: Line, ignored: Int): String = {
         val left = 0
         val right = space - line.length
@@ -101,7 +101,7 @@ case class REPLesent(
       }
     }
 
-    object LeftAligned extends Alignment {
+    private object LeftAligned extends Alignment {
       def apply(line: Line, margin: Int): String = {
         val left = margin / 2
         val right = space - left - line.length
@@ -110,7 +110,7 @@ case class REPLesent(
       }
     }
 
-    object Centered extends Alignment {
+    private object Centered extends Alignment {
       def apply(line: Line, ignored: Int): String = {
         val margin = space - line.length
 
@@ -121,7 +121,7 @@ case class REPLesent(
       }
     }
 
-    object RightAligned extends Alignment {
+    private object RightAligned extends Alignment {
       def apply(line: Line, margin: Int): String = {
         val right = (margin + 1) / 2
         val left = space - right - line.length
@@ -130,7 +130,7 @@ case class REPLesent(
       }
     }
 
-    object RightFlushed extends Alignment {
+    private object RightFlushed extends Alignment {
       def apply(line: Line, ignored: Int): String = {
         val left = space - line.length
         val right = 0
@@ -141,24 +141,24 @@ case class REPLesent(
 
     private val colorEscape = """\\.""".r
 
-    def apply(line: String): Line = {
+    private def align(line: String): (String, Alignment) = line match {
+      case s if s startsWith "<< " => (s.drop(3), LeftFlushed)
+      case s if s startsWith "< " => (s.drop(2), LeftAligned)
+      case s if s startsWith "| " => (s.drop(2), Centered)
+      case s if s startsWith "> " => (s.drop(2), RightAligned)
+      case s if s startsWith ">> " => (s.drop(3), RightFlushed)
+      case s: String => (s, LeftAligned)
+    }
+
+    private def ansi(line: String): (String, Int) = {
       import scala.io.AnsiColor._
 
-      val (_line, alignment): (String, Alignment) = line match {
-        case s if s startsWith "<< " => (s.drop(3), LeftFlushed)
-        case s if s startsWith "< " => (s.drop(2), LeftAligned)
-        case s if s startsWith "| " => (s.drop(2), Centered)
-        case s if s startsWith "> " => (s.drop(2), RightAligned)
-        case s if s startsWith ">> " => (s.drop(3), RightFlushed)
-        case s => (s, LeftAligned)
-      }
+      var length = line.length
+      var reset = ""
 
-      var length = _line.length
-      var ansi = false
+      def color(c: String): String = { length -= 2; reset = RESET; c }
 
-      def color(c: String) = { length -= 2; ansi = true; c }
-
-      val content: String = colorEscape replaceAllIn (_line, m => m.matched(1) match {
+      val content: String = colorEscape replaceAllIn (line, m => m.matched(1) match {
         case '\\' => length -= 1; "\\\\"
         case 'b' => color(BLUE)
         case 'B' => color(BLUE_B)
@@ -180,12 +180,17 @@ case class REPLesent(
         case '!' => color(REVERSED)
         case '*' => color(BOLD)
         case '_' => color(UNDERLINED)
-        case c => "\\\\" + c
+        case c: Char => "\\\\" + c
       })
 
-      val reset = if (ansi) RESET else ""
+      (content + reset, length)
+    }
 
-      Line(content = content + reset, length = length, alignment = alignment)
+    def apply(line: String): Line = {
+      val (l, alignment) = align(line)
+      val (content, length) = ansi(l)
+
+      Line(content = content, length = length, alignment = alignment)
     }
   }
 
@@ -229,7 +234,9 @@ case class REPLesent(
 
       if (currentSlideIsDefined && currentSlide.hasBuild(buildCursor)) {
         Some(currentSlide.build(buildCursor, footer))
-      } else None
+      } else {
+        None
+      }
     }
 
     def jumpTo(n: Int): Option[Build] = select(slide = n)
@@ -321,7 +328,7 @@ case class REPLesent(
 
     val sb = StringBuilder.newBuilder
 
-    def render(line: Line) = {
+    def render(line: Line): StringBuilder = {
       sb ++= sinistral
       sb ++= line.alignTo(margin)
       sb ++= dextral
