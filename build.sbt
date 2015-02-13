@@ -15,7 +15,7 @@
  */
 name := "REPLesent"
 
-version := "0.5"
+version := "0.6"
 
 scalaVersion := "2.11.5"
 
@@ -64,9 +64,19 @@ libraryDependencies ++= Seq(
 // Improved incremental compilation
 incOptions := incOptions.value.withNameHashing(true)
 
+// Improved dependency management
+updateOptions := updateOptions.value.withCachedResolution(true)
+
 // Download and create Eclipse source attachments for library dependencies
 // EclipseKeys.withSource := true
 
 showSuccess := true
 
 showTiming := true
+
+shellPrompt := { state =>
+  import scala.Console.{CYAN,RESET}
+  val p = Project.extract(state)
+  val name = p.getOpt(sbt.Keys.name) getOrElse p.currentProject.id
+  s"[$CYAN$name$RESET] $$ "
+}
