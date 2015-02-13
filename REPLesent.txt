@@ -70,13 +70,13 @@ Builds are separated by two dashes (\r--\s) on a line by themselves.
 Type '\bn\s' a few times to see how it works.
 --
 
-\*\wPhase 1\s: Collect underpants
+\*Phase 1\s: Collect underpants
 --
 
-\*\wPhase 2\s: ?
+\*Phase 2\s: ?
 --
 
-\*\wPhase 3\s: Profit
+\*Phase 3\s: Profit
 ---
 | \gLine alignment
 
@@ -101,7 +101,7 @@ Please note that the space at the end is mandatory.
 All whitespace other than the one following the alignment command is
 preserved, so you can easily align text manually if needed.
 ---
-\rOh \gmy \bgosh, \cit's \mfull \yof \wcolors\r!\g!\b!\c!\m!\y!\w!\k!
+\rOh \gmy \bgosh, \cit's \mfull \yof \scolors\r!\g!\b!\c!\m!\y!\w!\k!
 
 ANSI color escape codes:
 \\r \rred\s    \\g \ggreen\s    \\b \bblue
