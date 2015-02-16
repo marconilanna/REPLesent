@@ -74,17 +74,17 @@ case class REPLesent(
 
   private val config = Config(width = width, height = height)
 
-  private case class Line(content: String, length: Int, private val alignment: Line.Alignment) {
+  private case class Line(content: String, length: Int, private val style: Line.Style) {
     override def toString: String = content
     def isEmpty: Boolean = content.isEmpty
-    def alignTo(margin: Int): String = alignment(this, margin)
+    def render(margin: Int): String = style(this, margin)
   }
 
   private object Line {
-    protected sealed trait Alignment {
+    protected sealed trait Style {
       private def blank = config.whiteSpace
 
-      protected def space = config.horizontalSpace
+      protected def horizontalSpace = config.horizontalSpace
 
       protected def fill(line: Line, left: Int, right: Int): String = {
         blank * left  + line + blank * right
@@ -93,7 +93,7 @@ case class REPLesent(
       def apply(line: Line, margin: Int): String
     }
 
-    object HorizontalRuler extends Alignment {
+    private object HorizontalRuler extends Style {
       import scala.io.AnsiColor.RESET
 
       private val ansiBegin = RESET.head
@@ -105,7 +105,7 @@ case class REPLesent(
         // Provides a default pattern if none was specified
         val pattern = if (line.isEmpty) defaultPattern else line
 
-        val width = space - margin
+        val width = horizontalSpace - margin
         val repeats = width / pattern.length
 
         val content = pattern.toString * repeats
@@ -117,13 +117,11 @@ case class REPLesent(
         val padding = pattern.toString takeWhile { c =>
           val continue = remaining > 0
 
-          if (ansi) {
-            if (c == ansiEnd) ansi = false
-          } else if (c == ansiBegin) {
-            ansi = true
-            reset = RESET
-          } else {
-            remaining -= 1
+          c match {
+            case `ansiEnd` if ansi => ansi = false
+            case _ if ansi =>
+            case `ansiBegin` => ansi = true; reset = RESET
+            case _ => remaining -= 1
           }
 
           continue
@@ -136,31 +134,31 @@ case class REPLesent(
       }
     }
 
-    object FullScreenHorizontalRuler extends Alignment {
+    private object FullScreenHorizontalRuler extends Style {
       def apply(line: Line, ignored: Int): String = HorizontalRuler(line, 0)
     }
 
-    private object LeftFlushed extends Alignment {
+    private object LeftFlushed extends Style {
       def apply(line: Line, ignored: Int): String = {
         val left = 0
-        val right = space - line.length
+        val right = horizontalSpace - line.length
 
         fill(line, left, right)
       }
     }
 
-    private object LeftAligned extends Alignment {
+    private object LeftAligned extends Style {
       def apply(line: Line, margin: Int): String = {
         val left = margin / 2
-        val right = space - left - line.length
+        val right = horizontalSpace - left - line.length
 
         fill(line, left, right)
       }
     }
 
-    private object Centered extends Alignment {
+    private object Centered extends Style {
       def apply(line: Line, ignored: Int): String = {
-        val margin = space - line.length
+        val margin = horizontalSpace - line.length
 
         val left = margin / 2
         val right = margin - left
@@ -169,18 +167,18 @@ case class REPLesent(
       }
     }
 
-    private object RightAligned extends Alignment {
+    private object RightAligned extends Style {
       def apply(line: Line, margin: Int): String = {
         val right = (margin + 1) / 2
-        val left = space - right - line.length
+        val left = horizontalSpace - right - line.length
 
         fill(line, left, right)
       }
     }
 
-    private object RightFlushed extends Alignment {
+    private object RightFlushed extends Style {
       def apply(line: Line, ignored: Int): String = {
-        val left = space - line.length
+        val left = horizontalSpace - line.length
         val right = 0
 
         fill(line, left, right)
@@ -189,7 +187,7 @@ case class REPLesent(
 
     private val colorEscape = """\\.""".r
 
-    private def align(line: String): (String, Alignment) = line match {
+    private def style(line: String): (String, Style) = line match {
       case s if s startsWith "<< " => (s.drop(3), LeftFlushed)
       case s if s startsWith "< " => (s.drop(2), LeftAligned)
       case s if s startsWith "| " => (s.drop(2), Centered)
@@ -237,10 +235,10 @@ case class REPLesent(
     }
 
     def apply(line: String): Line = {
-      val (l, alignment) = align(line)
+      val (l, lineStyle) = style(line)
       val (content, length) = ansi(l)
 
-      Line(content = content, length = length, alignment = alignment)
+      Line(content = content, length = length, style = lineStyle)
     }
   }
 
@@ -380,7 +378,7 @@ case class REPLesent(
 
     def render(line: Line): StringBuilder = {
       sb ++= sinistral
-      sb ++= line.alignTo(margin)
+      sb ++= line.render(margin)
       sb ++= dextral
       sb ++= newline
     }
