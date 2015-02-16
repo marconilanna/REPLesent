@@ -76,6 +76,7 @@ case class REPLesent(
 
   private case class Line(content: String, length: Int, private val alignment: Line.Alignment) {
     override def toString: String = content
+    def isEmpty: Boolean = content.isEmpty
     def alignTo(margin: Int): String = alignment(this, margin)
   }
 
@@ -93,20 +94,50 @@ case class REPLesent(
     }
 
     object HorizontalRuler extends Alignment {
+      import scala.io.AnsiColor.RESET
+
+      private val ansiBegin = RESET.head
+      private val ansiEnd = RESET.last
+
+      private val defaultPattern = Line("-")
+
       def apply(line: Line, margin: Int): String = {
+        // Provides a default pattern if none was specified
+        val pattern = if (line.isEmpty) defaultPattern else line
+
         val width = space - margin
-        val content: String = line.toString * (width / line.length)
-        val newLine: Line = Line(content + content.take(width - content.length))
+        val repeats = width / pattern.length
+
+        val content = pattern.toString * repeats
+
+        var remaining = width - repeats * pattern.length
+        var ansi = false
+        var reset = ""
+
+        val padding = pattern.toString takeWhile { c =>
+          val continue = remaining > 0
+
+          if (ansi) {
+            if (c == ansiEnd) ansi = false
+          } else if (c == ansiBegin) {
+            ansi = true
+            reset = RESET
+          } else {
+            remaining -= 1
+          }
+
+          continue
+        }
+
         val left = margin / 2
         val right = margin - left
-        fill(newLine, left, right)
+
+        fill(Line(content + padding + reset, width, LeftAligned), left, right)
       }
     }
 
     object FullScreenHorizontalRuler extends Alignment {
-      def apply(line: Line, ignored: Int): String = {
-        HorizontalRuler(line, 0)
-      }
+      def apply(line: Line, ignored: Int): String = HorizontalRuler(line, 0)
     }
 
     private object LeftFlushed extends Alignment {
@@ -164,8 +195,8 @@ case class REPLesent(
       case s if s startsWith "| " => (s.drop(2), Centered)
       case s if s startsWith "> " => (s.drop(2), RightAligned)
       case s if s startsWith ">> " => (s.drop(3), RightFlushed)
-      case s if s startsWith "// " => (s.drop(3), FullScreenHorizontalRuler)
       case s if s startsWith "/ " => (s.drop(2), HorizontalRuler)
+      case s if s startsWith "// " => (s.drop(3), FullScreenHorizontalRuler)
       case s: String => (s, LeftAligned)
     }
 
