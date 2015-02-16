@@ -283,12 +283,44 @@ case class REPLesent(
   }
 
   private def parse(input: Iterator[String]): IndexedSeq[Slide] = {
+    sealed trait Parser {
+      def switch: Parser
+      def apply(line: String): Line
+    }
+
+    object LineParser extends Parser {
+      def switch: Parser = CodeParser
+      def apply(line: String): Line = Line(line)
+    }
+
+    object CodeParser extends Parser {
+      private val regex = Seq(
+        "\\\\m" -> ("""\b(?:abstract|case|catch|class|def|do|else|extends|final|finally|for|""" +
+          """forSome|if|implicit|import|lazy|match|new|object|override|package|private|""" +
+          """protected|return|sealed|super|throw|trait|try|type|val|var|while|with|yield)\b""").r
+      , "\\\\g" -> """\b(?:true|false|null|this)\b""".r
+      , "\\\\b" -> ("""(?i)\b(?:(?:0(?:[0-7]+|X[0-9A-F]+))L?|(?:(?:0|[1-9][0-9]*)""" +
+          """(?:(?:\.[0-9]+)?(?:E[+\-]?[0-9]+)?F?|L?))|\\.[0-9]+(?:E[+\-]?[0-9]+)?F?)\b""").r
+      , "\\\\*" -> """\b[$_]*[A-Z][_$A-Z0-9]*[\w$]*\b""".r
+      )
+
+      def switch: Parser = LineParser
+      def apply(line: String): Line = Line((line /: regex) { case (line, (color, regex)) =>
+        regex replaceAllIn (line, m =>
+          color + m + "\\\\s"
+        )
+      })
+    }
+
     case class Acc(
       content: IndexedSeq[Line] = IndexedSeq.empty
     , builds: IndexedSeq[Int] = IndexedSeq.empty
     , deck: IndexedSeq[Slide] = IndexedSeq.empty
+    , parser: Parser = LineParser
     ) {
-      def append(line: String): Acc = copy(content = content :+ Line(line))
+      def switchParser = copy(parser = parser.switch)
+
+      def append(line: String): Acc = copy(content = content :+ parser(line))
 
       def pushBuild: Acc = copy(builds = builds :+ content.size)
 
@@ -306,11 +338,13 @@ case class REPLesent(
 
     val slideSeparator = "---"
     val buildSeparator = "--"
+    val codeDelimiter = "```"
 
     val acc = (Acc() /: input) { (acc, line) =>
       line match {
         case `slideSeparator` => acc.pushSlide
         case `buildSeparator` => acc.pushBuild
+        case `codeDelimiter` => acc.switchParser
         case _ => acc.append(line)
       }
     }.pushSlide

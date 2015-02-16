@@ -78,6 +78,38 @@ Type '\bn\s' a few times to see how it works.
 
 \*Phase 3\s: Profit
 ---
+Basic support for syntax highlighting is also provided.
+
+Just surround your Scala code with the \r```\s delimiter:
+
+< ```
+< val a = 42
+< ```
+---
+```
+import scala.util._
+
+var i = 0
+lazy val avogadro = 6.02e23
+
+def f(i: Int) = i + 1
+
+sealed trait A
+private object B extends A
+protected case class Person(name: String)
+
+try { 1 / 0 } catch { case e: Exception => 0 }
+
+if (this == null) true else false
+
+for (i <- 1 to 10) yield i * i
+
+a match {
+  case 1 => "one"
+  case _ => "not"
+}
+```
+---
 | \gLine alignment
 
 Lines can be easily aligned.

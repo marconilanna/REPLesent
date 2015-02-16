@@ -15,7 +15,7 @@
  */
 name := "REPLesent"
 
-version := "0.6"
+version := "0.7"
 
 scalaVersion := "2.11.5"
 
@@ -77,7 +77,7 @@ unsound-match              Pattern match may not be typesafe
 */
 
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "2.2.4" % "test"
+  "org.scalatest" %% "scalatest" % "2.2.4" % Test
 )
 
 // Improved incremental compilation
