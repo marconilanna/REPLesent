@@ -19,6 +19,7 @@ case class REPLesent(
 , input: String = "REPLesent.txt"
 , slideCounter: Boolean = false
 , slideTotal: Boolean = false
+, intp: scala.tools.nsc.interpreter.IMain = null
 ) {
   import scala.util.Try
 
@@ -245,7 +246,7 @@ case class REPLesent(
   // `size` and `maxLength` refer to the dimensions of the slide last build
   private case class Build(content: IndexedSeq[Line], size: Int, maxLength: Int, footer: Line)
 
-  private case class Slide(content: IndexedSeq[Line], builds: IndexedSeq[Int]) {
+  private case class Slide(content: IndexedSeq[Line], builds: IndexedSeq[Int], code: IndexedSeq[String]) {
     private val maxLength = content.maxBy(_.length).length
 
     def lastBuild: Int = builds.size - 1
@@ -302,6 +303,14 @@ case class REPLesent(
     def lastSlide: Option[Build] = jumpTo(slides.size - 1)
 
     def lastBuild: Option[Build] = jumpTo(slides.size) orElse previousBuild
+
+    def runCode: Unit = {
+      if (repl.isEmpty) Console.err.print(s"No reference to interpreter found. Please call with parameter intp=$$intp")
+
+      else if (currentSlide.code(buildCursor).isEmpty) Console.err.print("No code for you")
+
+      else repl foreach { _ interpret currentSlide.code(buildCursor) }
+    }
   }
 
   private val helpMessage = """Usage:
@@ -315,8 +324,11 @@ case class REPLesent(
     |  first         f      |<    go to first slide
     |  last          l      >|    go to last slide
     |  Last          L      >>|   go to last build of last slide
+    |  run           r      !!    execute code that appears on slide
     |  blank         b            blank screen
     |  help          h      ?     print this help message""".stripMargin
+
+  private val repl = Option(intp)
 
   private val deck = Deck(parseFile(input))
 
@@ -333,12 +345,12 @@ case class REPLesent(
   private def parse(input: Iterator[String]): IndexedSeq[Slide] = {
     sealed trait Parser {
       def switch: Parser
-      def apply(line: String): Line
+      def apply(line: String): (Line, Option[String])
     }
 
     object LineParser extends Parser {
       def switch: Parser = CodeParser
-      def apply(line: String): Line = Line(line)
+      def apply(line: String): (Line, Option[String]) = (Line(line), None)
     }
 
     object CodeParser extends Parser {
@@ -353,31 +365,47 @@ case class REPLesent(
       )
 
       def switch: Parser = LineParser
-      def apply(line: String): Line = Line((line /: regex) { case (line, (color, regex)) =>
-        regex replaceAllIn (line, m =>
-          color + m + "\\\\s"
-        )
-      })
+
+      def apply(line: String): (Line, Option[String]) = {
+        val l = Line("< " + (line /: regex) { case (line, (color, regex)) =>
+          regex replaceAllIn (line, m =>
+            color + m + "\\\\s"
+          )
+        })
+
+        (l, Option(line))
+      }
     }
 
     case class Acc(
       content: IndexedSeq[Line] = IndexedSeq.empty
     , builds: IndexedSeq[Int] = IndexedSeq.empty
     , deck: IndexedSeq[Slide] = IndexedSeq.empty
+    , code: IndexedSeq[String] = IndexedSeq.empty
+    , codeAcc: IndexedSeq[String] = IndexedSeq.empty
     , parser: Parser = LineParser
     ) {
-      def switchParser = copy(parser = parser.switch)
+      import config.newline
 
-      def append(line: String): Acc = copy(content = content :+ parser(line))
+      def switchParser: Acc = copy(parser = parser.switch)
 
-      def pushBuild: Acc = copy(builds = builds :+ content.size)
+      def append(line: String): Acc = {
+        val (l, c) = parser(line)
+        copy(content = content :+ l, codeAcc = c.fold(codeAcc)(codeAcc :+ _))
+      }
+
+      def pushBuild: Acc = copy(
+        builds = builds :+ content.size
+      , code = code :+ (codeAcc mkString newline)
+      , codeAcc = IndexedSeq.empty
+      )
 
       def pushSlide: Acc = {
         if (content.isEmpty) {
           append("").pushSlide
         } else {
-          val builds = pushBuild.builds
-          val slide = Slide(content, builds)
+          val finalBuild = pushBuild
+          val slide = Slide(content, finalBuild.builds, finalBuild.code)
 
           Acc(deck = deck :+ slide)
         }
@@ -478,6 +506,10 @@ case class REPLesent(
   def Last: Unit = show(deck.lastBuild)
   def L: Unit = Last
   def >>| : Unit = Last
+
+  def run: Unit = deck.runCode
+  def r: Unit = run
+  def !! : Unit = run
 
   def blank: Unit = print(config.newline * config.screenHeight)
   def b: Unit = blank
