@@ -234,8 +234,8 @@ case class REPLesent(
       case s if s startsWith "| " => (s.drop(2), Centered)
       case s if s startsWith "> " => (s.drop(2), RightAligned)
       case s if s startsWith ">> " => (s.drop(3), RightFlushed)
-      case s if s startsWith "/ " => (s.drop(2), HorizontalRuler)
-      case s if s startsWith "// " => (s.drop(3), FullScreenHorizontalRuler)
+      case s if s startsWith "//" => (s.drop(2), FullScreenHorizontalRuler)
+      case s if s startsWith "/" => (s.drop(1), HorizontalRuler)
       case s: String => (s, LeftAligned)
     }
 
