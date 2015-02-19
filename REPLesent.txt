@@ -3,9 +3,10 @@
 REPLesent is a neat little tool to build presentations
 using the Scala REPL.
 
-It is a good option for talks with a live coding component.
+It is a good option for training sessions and talks
+with some live coding. More on that later.
 
-To continue, type the letter '\bn\s' (no quotes) and then \bRETURN\s.
+To continue, type the letter '\bn\s' (no quotes) and \bRETURN\s.
 ---
 You use '\bn\s' to advance to the next slide.
 
@@ -13,7 +14,7 @@ Let's try it, type '\bn\s' again to see it.
 ---
 To go back to a previous slide, you can type '\bp\s'.
 
-Try '\bp\s' now to return to the last slide and
+Try '\bp\s' now to return to the prior slide and
 then use '\bn\s' twice to go to the next slide.
 
 But please be careful to not read and
@@ -51,6 +52,8 @@ The slide you missed was slide number 5.
 
 To jump to slide 5, just use the command '\b5 go\s'. Go!
 ---
+| \gBasics
+
 Creating presentations is very easy.
 
 All you need is a plain text file. Anything you write in the file is
@@ -65,6 +68,8 @@ Think bullet points in Powerpoint.
 
 Advance to the next slide to learn more about builds.
 ---
+| \gBuilds (Incremental Slides)
+
 Builds are separated by two dashes (\r--\s) on a line by themselves.
 
 Type '\bn\s' a few times to see how it works.
@@ -78,13 +83,82 @@ Type '\bn\s' a few times to see how it works.
 
 \*Phase 3\s: Profit
 ---
+| \gLine Alignment
+
+Lines can be easily aligned. Just start a line with one of the
+following commands. The space after the command is mandatory.
+
+<< '\r<< \s' flushes the line to the left of the screen.
+
+< '\r< \s' aligns the line to the left of the slide (default).
+
+| '\r| \s' centers the line on the screen.
+
+> '\r> \s' aligns the line to the right of the slide.
+
+>> '\r>> \s' flushes the line to the right of the screen.
+
+Whitespace other than the one following the alignment command
+is preserved. You can easily align manually if needed.
+---
+| \gANSI Color Support
+
+\rOh \gmy \bgosh, \cit's \mfull \yof \scolors\r!\g!\b!\c!\m!\y!\w!\k!
+
+ANSI color escape codes:
+\\r \rred\s   \\g \ggreen\s    \\b \bblue\s    \\k \kblack
+\\c \ccyan\s  \\m \mmagenta\s  \\y \yyellow\s  \\w \wwhite
+
+\\* is for \*bold\s. You can combine it with colors, too:
+   \*\rred\s      \*\ggreen\s       \*\bblue\s       \*\kblack
+   \*\ccyan\s     \*\mmagenta\s     \*\yyellow\s     \*\wwhite
+
+Capital letters set background color:
+\\R \Rred\s   \\G \Ggreen\s    \\B \Bblue\s    \\K \Kblack
+\\C \Ccyan\s  \\M \Mmagenta\s  \\Y \Yyellow\s  \\W \Wwhite
+
+Use \\_ for \_underline\s and \\! for \!reverse\s.
+\\s resets everything back to normal, whatever your normal is.
+Use double slashes (\\\\) to escape slashes.
+Anything else, like \z, is unaffected.
+---
+| \gHorizontal Rulers
+
+You can start a line with a forward slash '\r/\s' to
+create a horizontal line across your slide:
+
+/
+
+Double slashes '\r//\s' create a line across the entire screen:
+
+//
+
+You can also specify custom patterns, as in '\r/=+\s':
+
+/=+
+
+Or even combine with colors. Stars and stripes!
+
+/\**\r=\b=
+
+Be creative!
+
+---
+| \gSyntax Highlighting
+
 Basic support for syntax highlighting is also provided.
 
-Just surround your Scala code with the \r```\s delimiter:
+Just surround your Scala code with the \r```\s delimiter.
 
 < ```
 < val a = 42
 < ```
+
+becomes
+
+```
+val a = 42
+```
 ---
 ```
 import scala.util._
@@ -110,50 +184,43 @@ a match {
 }
 ```
 ---
-| \gLine alignment
+| \gRunning Code
 
-Lines can be easily aligned.
+Now, what I personally consider to be the coolest feature of them all:
 
-The longest line (like this one for instance) is used to set the slide size.
-You can align relative to this centered slide "box" or to the screen.
+| \*Running Scala code straight from your slides!
 
-Just start a line with one of the following commands.
-Please note that the space at the end is mandatory.
+Let's start with some sample code:
 
-<< '\r<< \s' flushes the line to the left of the screen.
+```
+val a = 2
+val b = 3
+a + b
+```
 
-< '\r< \s' aligns the line to the left of the slide. This is the default.
-
-| '\r| \s' centers the line on the screen.
-
-> '\r> \s' aligns the line to the right of the slide.
-
->> '\r>> \s' flushes the line to the right of the screen.
-
-All whitespace other than the one following the alignment command is
-preserved, so you can easily align text manually if needed.
+Now, enter '\b!!\s' and see the Scala REPL execute the code above just
+as if you had typed it all by yourself directly in the prompt.
 ---
-\rOh \gmy \bgosh, \cit's \mfull \yof \scolors\r!\g!\b!\c!\m!\y!\w!\k!
+That was pretty cool, eh? (Yes, I am Canadian, sorry.)
 
-ANSI color escape codes:
-\\r \rred\s    \\g \ggreen\s    \\b \bblue
-\\c \ccyan\s   \\m \mmagenta\s  \\y \yyellow
-\\k \kblack\s  \\w \wwhite
+But it gets better.
 
-\\* is for \*bold\s. You can combine it with colors, too:
-   \*\rred\s       \*\ggreen\s       \*\bblue
-   \*\ccyan\s      \*\mmagenta\s     \*\yyellow
-   \*\kblack\s     \*\wwhite
+Remember we defined vals a and b in the previous slide?
 
-Capital letters set background color:
-\\R \Rred\s    \\G \Ggreen\s    \\B \Bblue
-\\C \Ccyan\s   \\M \Mmagenta\s  \\Y \Yyellow
-\\K \Kblack\s  \\W \Wwhite
+Well, any slide now can refer to those variables.
+They are still in scope. Try it if you don't believe me:
 
-Use \\_ for \_underline\s and \\! for \!reverse\s.
-\\s resets everything back to normal, whatever your normal is.
-Use double slashes (\\\\) to escape slashes.
-Anything else, like \z, is unaffected.
+```
+val c = a * b
+```
+--
+
+You can put multiple pieces of code in the same slide, separated
+by builds or not. They will all get executed properly. Try it again:
+
+```
+for (i <- 1 to c) yield i * i
+```
 ---
 Oh, noes! This is the last slide.
 
