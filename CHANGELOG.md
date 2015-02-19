@@ -2,6 +2,15 @@
 
 ## [Unreleased][unreleased]
 
+## [1.0] - 2015-02-19
+### Added
+- Updated tutorial slideshow
+- Updated instructions in README.md
+- Added Quick Reference Guide
+- Added sample screencast tour
+### Changed
+- No space between a horizontal ruler command and its pattern
+
 ## [0.9] - 2015-02-18
 ### Added
 - Support for running code straight from the slides
@@ -43,7 +52,8 @@
 - Margin (border) configuration
 - Tutorial / sample slideshow
 
-[unreleased]: https://github.com/marconilanna/REPLesent/compare/v0.9...HEAD
+[unreleased]: https://github.com/marconilanna/REPLesent/compare/v1.0...HEAD
+[1.0]: https://github.com/marconilanna/REPLesent/compare/v0.9...v1.0
 [0.9]: https://github.com/marconilanna/REPLesent/compare/v0.8...v0.9
 [0.8]: https://github.com/marconilanna/REPLesent/compare/v0.7...v0.8
 [0.7]: https://github.com/marconilanna/REPLesent/compare/v0.6...v0.7
