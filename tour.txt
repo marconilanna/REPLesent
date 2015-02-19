@@ -1,0 +1,167 @@
+| \gWelcome to REPLesent!
+
+REPLesent is a neat little tool to build presentations with the Scala REPL
+---
+| \gBasics
+
+Creating presentations is very easy.
+
+All you need is a plain text file. Anything you write in the file is
+displayed on the screen, centered vertically and horizontally.
+
+To separate slides, just put three dashes (\r---\s) on a line by themselves.
+---
+| \gBuilds (Incremental Slides)
+
+It is also possible to create "builds", where a slide is displayed
+incrementally, step by step, like bullet points in Powerpoint.
+
+Builds are separated by two dashes (\r--\s) on a line by themselves.
+--
+
+\*Phase 1\s: Collect underpants
+--
+
+\*Phase 2\s: ?
+--
+
+\*Phase 3\s: Profit
+---
+| \g Navigation
+
+You have the full arsenal of navigation options at your disposal:
+
+* Next and previous build
+* Next and previous slide
+* First and last slide
+* Advance or go back any number of slides
+* Jump to slide number
+---
+| \gText Alignment
+
+Text can be aligned with ease.
+
+<< '\r<< \s' flushes the line to the left of the screen.
+
+< '\r< \s' aligns the line to the left of the slide (default).
+
+| '\r| \s' centers the line.
+
+> '\r> \s' aligns the line to the right of the slide.
+
+>> '\r>> \s' flushes the line to the right of the screen.
+
+Whitespace is preserved, you can easily align manually if needed.
+---
+| \gANSI Color Support
+
+\rOh \gmy \bgosh, \cit's \mfull \yof \scolors\r!\g!\b!\c!\m!\y!\w!\k!
+
+   \rred\s      \ggreen\s       \bblue\s       \kblack
+   \ccyan\s     \mmagenta\s     \yyellow\s     \wwhite
+
+\*Bold\s:
+   \*\rred\s      \*\ggreen\s       \*\bblue\s       \*\kblack
+   \*\ccyan\s     \*\mmagenta\s     \*\yyellow\s     \*\wwhite
+
+Background:
+   \Rred\s      \Ggreen\s       \Bblue\s       \Kblack
+   \Ccyan\s     \Mmagenta\s     \Yyellow\s     \Wwhite
+
+\_Underline\s and \!reverse\s also supported.
+---
+| \gHorizontal Rulers
+
+You can start a line with a forward slash '\r/\s' to
+create a horizontal line across your slide:
+
+/
+
+Double slashes '\r//\s' create a line across the entire screen:
+
+//
+
+You can specify custom patterns.
+
+Be creative, use Unicode and ANSI colors!
+
+/=+
+
+/\r=\s\**\s\r=\b=\s\**\s\b=
+
+/ ⚡ ☁
+
+---
+| \gSyntax Highlighting
+
+Basic support for syntax highlighting is also provided.
+
+Just surround your Scala code with the \r```\s delimiter.
+
+```
+import scala.util._
+
+var a = 42
+
+def f(i: Int) = i + 1
+
+sealed trait A
+private object B extends A
+case class Person(name: String)
+
+try { 1 / 0 } catch { case e: Exception => 0 }
+
+if (this == null) true else false
+
+for (i <- 1 to 10) yield i * i
+```
+---
+| \gRunning Code
+
+Now, what I personally consider to be the coolest feature of them all:
+
+| \*Running Scala code straight from your slides!
+
+```
+val a = 2
+val b = 3
+a * b
+```
+
+Just enter '\b!!\s' or '\br\s' and see the Scala REPL execute the code
+above as if you had typed it yourself directly in the prompt.
+---
+That was pretty cool, eh? But it gets better.
+
+Remember we defined vals \ba\s and \bb\s in the previous slide?
+
+Any slide can now refer to those variables. They are still in scope.
+
+```
+val c = a + b
+```
+--
+
+You can put multiple pieces of code in the same slide, separated
+by builds or not. They all get executed properly.
+--
+
+Let's first define a new value:
+
+```
+val last = a + b + c
+```
+
+And then use it:
+
+```
+for (i <- 1 to last) yield i * i
+```
+---
+And here ends our adventure.
+
+Thank you for patiently watching this tour.
+
+The included tutorial provides more detailed instructions for you.
+
+I will leave you with one last command: '\bh\s'.
