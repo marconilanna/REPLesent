@@ -82,21 +82,21 @@ case class REPLesent(
   }
 
   private object Line {
+    import scala.io.AnsiColor._
+
     protected sealed trait Style {
-      private def blank = config.whiteSpace
+      import config.whiteSpace
 
       protected def horizontalSpace = config.horizontalSpace
 
       protected def fill(line: Line, left: Int, right: Int): String = {
-        blank * left  + line + blank * right
+        whiteSpace * left  + line + whiteSpace * right
       }
 
       def apply(line: Line, margin: Int): String
     }
 
     private object HorizontalRuler extends Style {
-      import scala.io.AnsiColor.RESET
-
       private val ansiBegin = RESET.head
       private val ansiEnd = RESET.last
 
@@ -118,9 +118,9 @@ case class REPLesent(
         val padding = pattern.toString takeWhile { c =>
           val continue = remaining > 0
 
-          c match {
+          if (continue) c match {
             case `ansiEnd` if ansi => ansi = false
-            case _ if ansi =>
+            case _ if ansi => // no-op
             case `ansiBegin` => ansi = true; reset = RESET
             case _ => remaining -= 1
           }
@@ -131,7 +131,9 @@ case class REPLesent(
         val left = margin / 2
         val right = margin - left
 
-        fill(Line(content + padding + reset, width, LeftAligned), left, right)
+        val l = Line(content + padding + reset, width, LeftAligned)
+
+        fill(l, left, right)
       }
     }
 
@@ -186,7 +188,45 @@ case class REPLesent(
       }
     }
 
-    private val colorEscape = """\\.""".r
+    private val ansiEscape = """\\.""".r
+
+    private val ansiColor = Map(
+      'b' -> BLUE,
+      'c' -> CYAN,
+      'g' -> GREEN,
+      'k' -> BLACK,
+      'm' -> MAGENTA,
+      'r' -> RED,
+      'w' -> WHITE,
+      'y' -> YELLOW,
+      'B' -> BLUE_B,
+      'C' -> CYAN_B,
+      'G' -> GREEN_B,
+      'K' -> BLACK_B,
+      'M' -> MAGENTA_B,
+      'R' -> RED_B,
+      'W' -> WHITE_B,
+      'Y' -> YELLOW_B,
+      '!' -> REVERSED,
+      '*' -> BOLD,
+      '_' -> UNDERLINED
+    )
+
+    private def ansi(line: String): (String, Int) = {
+      var length = line.length
+      var reset = ""
+
+      val content: String = ansiEscape replaceAllIn (line, m =>
+        m.matched(1) match {
+          case c if ansiColor.contains(c) => length -= 2; reset = RESET; ansiColor(c)
+          case 's' => length -= 2; RESET
+          case '\\' => length -= 1; "\\\\"
+          case c: Char => "\\\\" + c
+        }
+      )
+
+      (content + reset, length)
+    }
 
     private def style(line: String): (String, Style) = line match {
       case s if s startsWith "<< " => (s.drop(3), LeftFlushed)
@@ -199,42 +239,6 @@ case class REPLesent(
       case s: String => (s, LeftAligned)
     }
 
-    private def ansi(line: String): (String, Int) = {
-      import scala.io.AnsiColor._
-
-      var length = line.length
-      var reset = ""
-
-      def color(c: String): String = { length -= 2; reset = RESET; c }
-
-      val content: String = colorEscape replaceAllIn (line, m => m.matched(1) match {
-        case '\\' => length -= 1; "\\\\"
-        case 'b' => color(BLUE)
-        case 'B' => color(BLUE_B)
-        case 'c' => color(CYAN)
-        case 'C' => color(CYAN_B)
-        case 'g' => color(GREEN)
-        case 'G' => color(GREEN_B)
-        case 'k' => color(BLACK)
-        case 'K' => color(BLACK_B)
-        case 'm' => color(MAGENTA)
-        case 'M' => color(MAGENTA_B)
-        case 'r' => color(RED)
-        case 'R' => color(RED_B)
-        case 's' => length -= 2; RESET
-        case 'w' => color(WHITE)
-        case 'W' => color(WHITE_B)
-        case 'y' => color(YELLOW)
-        case 'Y' => color(YELLOW_B)
-        case '!' => color(REVERSED)
-        case '*' => color(BOLD)
-        case '_' => color(UNDERLINED)
-        case c: Char => "\\\\" + c
-      })
-
-      (content + reset, length)
-    }
-
     def apply(line: String): Line = {
       val (l, lineStyle) = style(line)
       val (content, length) = ansi(l)
@@ -243,7 +247,7 @@ case class REPLesent(
     }
   }
 
-  // `size` and `maxLength` refer to the dimensions of the slide last build
+  // `size` and `maxLength` refer to the dimensions of the slide's last build
   private case class Build(content: IndexedSeq[Line], size: Int, maxLength: Int, footer: Line)
 
   private case class Slide(content: IndexedSeq[Line], builds: IndexedSeq[Int], code: IndexedSeq[String]) {
@@ -270,6 +274,7 @@ case class REPLesent(
 
         sb ++= " "
       }
+
       Line(sb.mkString)
     }
 
@@ -279,6 +284,7 @@ case class REPLesent(
       // "Stops" the cursor one position after/before the last/first slide to avoid
       // multiple next/previous calls taking it indefinitely away from the deck
       slideCursor = max(-1, min(slides.size, slide))
+
       buildCursor = build
 
       if (currentSlideIsDefined && currentSlide.hasBuild(buildCursor)) {
@@ -305,11 +311,15 @@ case class REPLesent(
     def lastBuild: Option[Build] = jumpTo(slides.size) orElse previousBuild
 
     def runCode: Unit = {
-      if (repl.isEmpty) Console.err.print(s"No reference to interpreter found. Please call with parameter intp=$$intp")
+      val code = currentSlide.code(buildCursor)
 
-      else if (currentSlide.code(buildCursor).isEmpty) Console.err.print("No code for you")
-
-      else repl foreach { _ interpret currentSlide.code(buildCursor) }
+      if (repl.isEmpty) {
+        Console.err.print(s"No reference to REPL found. Please call with parameter intp=$$intp")
+      } else if (code.isEmpty) {
+        Console.err.print("No code for you")
+      } else {
+        repl foreach { _ interpret code }
+      }
     }
   }
 
