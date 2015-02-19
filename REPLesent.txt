@@ -83,16 +83,16 @@ Type '\bn\s' a few times to see how it works.
 
 \*Phase 3\s: Profit
 ---
-| \gLine Alignment
+| \gText Alignment
 
-Lines can be easily aligned. Just start a line with one of the
+Text can be aligned with ease. Just start a line with one of the
 following commands. The space after the command is mandatory.
 
 << '\r<< \s' flushes the line to the left of the screen.
 
 < '\r< \s' aligns the line to the left of the slide (default).
 
-| '\r| \s' centers the line on the screen.
+| '\r| \s' centers the line.
 
 > '\r> \s' aligns the line to the right of the slide.
 
@@ -137,11 +137,11 @@ You can also specify custom patterns, as in '\r/=+\s':
 
 /=+
 
-Or even combine with colors. Stars and stripes!
+You can use Unicode and ANSI colors, too. Be creative!
 
-/\**\r=\b=
+/\r=\s\**\s\r=\b=\s\**\s\b=
 
-Be creative!
+/ ⚡ ☁
 
 ---
 | \gSyntax Highlighting
@@ -195,31 +195,38 @@ Let's start with some sample code:
 ```
 val a = 2
 val b = 3
-a + b
+a * b
 ```
 
-Now, enter '\b!!\s' and see the Scala REPL execute the code above just
-as if you had typed it all by yourself directly in the prompt.
+Now, enter '\b!!\s' or '\br\s' and see the Scala REPL execute the code
+above as if you had typed it yourself directly in the prompt.
 ---
-That was pretty cool, eh? (Yes, I am Canadian, sorry.)
+That was pretty cool, eh? But it gets better.
 
-But it gets better.
+Remember we defined vals \ba\s and \bb\s in the previous slide?
 
-Remember we defined vals a and b in the previous slide?
-
-Well, any slide now can refer to those variables.
+Any slide can now refer to those variables.
 They are still in scope. Try it if you don't believe me:
 
 ```
-val c = a * b
+val c = a + b
 ```
 --
 
 You can put multiple pieces of code in the same slide, separated
-by builds or not. They will all get executed properly. Try it again:
+by builds or not. They all get executed properly.
+--
+
+Let's try it. First, define a new value:
 
 ```
-for (i <- 1 to c) yield i * i
+val last = a + b + c
+```
+
+And then use it:
+
+```
+for (i <- 1 to last) yield i * i
 ```
 ---
 Oh, noes! This is the last slide.
