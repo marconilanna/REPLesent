@@ -122,6 +122,7 @@ case class REPLesent(
             case `ansiEnd` if ansi => ansi = false
             case _ if ansi => // no-op
             case `ansiBegin` => ansi = true; reset = RESET
+            case c if Character.isHighSurrogate(c) => // no-op
             case _ => remaining -= 1
           }
 
@@ -188,6 +189,17 @@ case class REPLesent(
       }
     }
 
+    private def style(line: String): (String, Style) = line match {
+      case s if s startsWith "<< " => (s.drop(3), LeftFlushed)
+      case s if s startsWith "< " => (s.drop(2), LeftAligned)
+      case s if s startsWith "| " => (s.drop(2), Centered)
+      case s if s startsWith "> " => (s.drop(2), RightAligned)
+      case s if s startsWith ">> " => (s.drop(3), RightFlushed)
+      case s if s startsWith "//" => (s.drop(2), FullScreenHorizontalRuler)
+      case s if s startsWith "/" => (s.drop(1), HorizontalRuler)
+      case s: String => (s, LeftAligned)
+    }
+
     private val ansiEscape = """\\.""".r
 
     private val ansiColor = Map(
@@ -213,35 +225,52 @@ case class REPLesent(
     )
 
     private def ansi(line: String): (String, Int) = {
-      var length = line.length
+      var drop = 0
       var reset = ""
 
       val content: String = ansiEscape replaceAllIn (line, m =>
         m.matched(1) match {
-          case c if ansiColor.contains(c) => length -= 2; reset = RESET; ansiColor(c)
-          case 's' => length -= 2; RESET
-          case '\\' => length -= 1; "\\\\"
+          case c if ansiColor.contains(c) => drop += 2; reset = RESET; ansiColor(c)
+          case 's' => drop += 2; RESET
+          case '\\' => drop += 1; "\\\\"
           case c: Char => "\\\\" + c
         }
       )
 
-      (content + reset, length)
+      (content + reset, drop)
     }
 
-    private def style(line: String): (String, Style) = line match {
-      case s if s startsWith "<< " => (s.drop(3), LeftFlushed)
-      case s if s startsWith "< " => (s.drop(2), LeftAligned)
-      case s if s startsWith "| " => (s.drop(2), Centered)
-      case s if s startsWith "> " => (s.drop(2), RightAligned)
-      case s if s startsWith ">> " => (s.drop(3), RightFlushed)
-      case s if s startsWith "//" => (s.drop(2), FullScreenHorizontalRuler)
-      case s if s startsWith "/" => (s.drop(1), HorizontalRuler)
-      case s: String => (s, LeftAligned)
+    private val emojiEscape = """:([\w+\-]+):""".r
+
+    private lazy val emojis: Map[String, String] = {
+      Try {
+        val input = io.Source.fromFile("emoji.txt").getLines
+        input.map { l =>
+          val a = l.split(' ')
+          (a(1), a(0))
+        }.toMap
+      } getOrElse Map.empty
+    }
+
+    private def emoji(line: String): (String, Int) = {
+      var drop = 0
+
+      val content: String = emojiEscape replaceAllIn (line, m => {
+        m.group(1) match {
+          case e if emojis.contains(e) => drop += m.matched.length - 1; emojis(e)
+          case _ => m.matched
+        }
+      })
+
+      (content, drop)
     }
 
     def apply(line: String): Line = {
-      val (l, lineStyle) = style(line)
-      val (content, length) = ansi(l)
+      val (l1, lineStyle) = style(line)
+      val (l2, ansiDrop) = ansi(l1)
+      val (content, emojiDrop) = emoji(l2)
+
+      val length = l1.codePointCount(0, l1.length) - ansiDrop - emojiDrop
 
       Line(content = content, length = length, style = lineStyle)
     }

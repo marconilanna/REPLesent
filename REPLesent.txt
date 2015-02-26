@@ -186,7 +186,7 @@ a match {
 ---
 | \gRunning Code
 
-Now, what I personally consider to be the coolest feature of them all:
+Now, what I personally consider to be the second coolest feature of all:
 
 | \*Running Scala code straight from your slides!
 
@@ -228,6 +228,31 @@ And then use it:
 ```
 for (i <- 1 to last) yield i * i
 ```
+---
+Of course, I saved the best for last:
+--
+
+| \gEmoji support!
+--
+
+I mean,
+
+| \gEmoji support:bangbang:
+--
+
+The most commonly used shortcuts are supported: \bemoji-cheat-sheet.com\s
+--
+
+And you can even use them as horizontal rulers:
+
+/ :walking:
+
+// :banana:
+
+/ :+1: :-1:
+
+// :two_men_holding_hands: :two_women_holding_hands:
+
 ---
 Oh, noes! This is the last slide.
 

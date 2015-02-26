@@ -1283,6 +1283,24 @@ class REPLesentSpec extends FreeSpec {
     assert(colors.error.isEmpty)
   }
 
+  "Emoji" in {
+    val expected =
+      """*************
+        |* 👍 👍 👏 😄   *
+        |*  🍌 🍌 🍌 🍌  *
+        |*           *
+        |* 🌎 🌍 🌏     *
+        |*           *
+        |* :invalid: *
+        |*************""".stripMargin
+
+    val replesent = REPLesent(13, 9, testFile("emoji"))
+
+    val emoji = capture(replesent.first)
+    assert(emoji.output === expected)
+    assert(emoji.error.isEmpty)
+  }
+
   "Line alignment:" - {
     "Odd horizontal space" in {
       val expected1 =

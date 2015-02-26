@@ -2,6 +2,10 @@
 
 ## [Unreleased][unreleased]
 
+## [1.1] - 2015-02-25
+### Added
+- Emoji support
+
 ## [1.0] - 2015-02-19
 ### Added
 - Updated tutorial slideshow
@@ -52,7 +56,8 @@
 - Margin (border) configuration
 - Tutorial / sample slideshow
 
-[unreleased]: https://github.com/marconilanna/REPLesent/compare/v1.0...HEAD
+[unreleased]: https://github.com/marconilanna/REPLesent/compare/v1.1...HEAD
+[1.1]: https://github.com/marconilanna/REPLesent/compare/v1.0...v1.1
 [1.0]: https://github.com/marconilanna/REPLesent/compare/v0.9...v1.0
 [0.9]: https://github.com/marconilanna/REPLesent/compare/v0.8...v0.9
 [0.8]: https://github.com/marconilanna/REPLesent/compare/v0.7...v0.8

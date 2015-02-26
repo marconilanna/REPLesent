@@ -30,7 +30,8 @@ Features
 * Horizontal rulers (thanks, [@daviscabral](https://github.com/daviscabral))
 * Syntax highlighting
 * Run code straight from slides directly in the REPL with a single keystroke.
-No other presentation tool will do that for you! :-)
+No other presentation tool can do that for you!
+* And the #1 requested feature: emoji! :-) I mean, :smile:
 
 Quick Tour
 ----------
@@ -52,6 +53,7 @@ Scala 2.11.4 or later and JDK 7 or later are the preferred versions.
 
 To get started, download and save to the same folder the files
 `REPLesent.scala` and `REPLesent.txt`.
+The file `emoji.txt` is optional, only needed to enable emoji support.
 
 First, create an alias:
 
@@ -158,6 +160,19 @@ Command | Description
 
 An optional pattern may be specified immediately following the forward slash.
 Unicode characters and ANSI color escapes (as above) are supported.
+
+### Emoji
+
+To enable emoji support, you will need a copy of the `emoji.txt` file.
+
+Almost all shortcuts listed by the [Emoji cheat sheet](http://www.emoji-cheat-sheet.com/)
+are supported.
+You can look at `emoji.txt` for the definitive list of supported emoji.
+
+Emojis can be combined with horizontal rulers and,
+depending on your system fonts, ANSI colors, too.
+
+Emoji has only be tested on Mac OS X Terminal.app, YMMV.
 
 Thanks
 ------
