@@ -300,6 +300,8 @@ case class REPLesent(
 
     def nextBuild: Option[Build] = select(build = buildCursor + 1) orElse jump(1)
 
+    def refreshBuild: Option[Build] = select(build = buildCursor)
+
     def previousBuild: Option[Build] = select(build = buildCursor - 1) orElse {
       jump(-1) flatMap { _ =>
         select(build = currentSlide.lastBuild)
@@ -496,6 +498,8 @@ case class REPLesent(
   def previous: Unit = show(deck.previousBuild)
   def p: Unit = previous
   def < : Unit = previous
+
+  def z: Unit = show(deck.refreshBuild)
 
   def Next: Unit = 1.next
   def N: Unit = Next
