@@ -1,6 +1,7 @@
 # Change Log
 
 ## [Unreleased][unreleased]
+- Added the "redraw" command, to show the current build/slide again
 
 ## [1.0] - 2015-02-19
 ### Added

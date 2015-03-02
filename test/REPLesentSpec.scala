@@ -640,6 +640,40 @@ class REPLesentSpec extends FreeSpec {
         assert(end.error.nonEmpty)
       }
 
+      "Redraw" in {
+        val replesent = REPLesent(w, h, testFile("navigation"))
+
+        capture(replesent.first)
+
+        val redrawn1 = capture(replesent.redraw)
+        assert(redrawn1.output === slide(1))
+        assert(redrawn1.error.isEmpty)
+
+        capture(replesent.Next)
+
+        val redrawn2 = capture(replesent.redraw)
+        assert(redrawn2.output === slide(2))
+        assert(redrawn2.error.isEmpty)
+
+        capture(replesent.Next)
+
+        val redrawn3 = capture(replesent.redraw)
+        assert(redrawn3.output === slide(3))
+        assert(redrawn3.error.isEmpty)
+
+        capture(replesent.Next)
+
+        val redrawn4 = capture(replesent.redraw)
+        assert(redrawn4.output === slide(4))
+        assert(redrawn4.error.isEmpty)
+
+        capture(replesent.Next)
+
+        val redrawn5 = capture(replesent.redraw)
+        assert(redrawn5.output === slide(5))
+        assert(redrawn5.error.isEmpty)
+      }
+
       "Multiple next after last, then previous" in {
         val replesent = REPLesent(w, h, testFile("navigation"))
 
@@ -1126,6 +1160,35 @@ class REPLesentSpec extends FreeSpec {
         assert(end.output.isEmpty)
         assert(end.error.nonEmpty)
       }
+
+      "Redraw" in {
+        val replesent = REPLesent(w, h, testFile("navigation_build"))
+
+        capture(replesent.first)
+
+        val slide1_build1 = capture(replesent.redraw)
+        assert(slide1_build1.output === slide('a'))
+        assert(slide1_build1.error.isEmpty)
+
+        capture(replesent.next)
+
+        val slide1_build2 = capture(replesent.redraw)
+        assert(slide1_build2.output === slide('a', 'b'))
+        assert(slide1_build2.error.isEmpty)
+
+        capture(replesent.next)
+
+        val slide2_buid1 = capture(replesent.redraw)
+        assert(slide2_buid1.output === slide('c'))
+        assert(slide2_buid1.error.isEmpty)
+
+        capture(replesent.next)
+
+        val slide2_build2 = capture(replesent.redraw)
+        assert(slide2_build2.output === slide('c', 'd'))
+        assert(slide2_build2.error.isEmpty)
+      }
+
 
       "Multiple next after last, then previous" in {
         val replesent = REPLesent(w, h, testFile("navigation_build"))
