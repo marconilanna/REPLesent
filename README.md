@@ -106,7 +106,7 @@ Command | Shortcut | Symbolic alias | Description
 --- | --- | --- | ---
 `next` | `n` | `>` | Go to next build/slide
 `previous` | `p` | `<` | Go back to previous build/slide
-`refresh` | `z` | | Redraw the current build/slide
+`redraw` | `z` | | Redraw the current build/slide
 `Next` | `N` | `>>` | Go to next slide
 `Previous` | `P` | `<<` | Go back to previous slide
 `i next` | `i n` | | Advance i slides
