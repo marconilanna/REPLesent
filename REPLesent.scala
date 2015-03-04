@@ -329,6 +329,8 @@ case class REPLesent(
 
     def nextBuild: Option[Build] = select(build = buildCursor + 1) orElse jump(1)
 
+    def redrawBuild: Option[Build] = select(build = buildCursor)
+
     def previousBuild: Option[Build] = select(build = buildCursor - 1) orElse {
       jump(-1) flatMap { _ =>
         select(build = currentSlide.lastBuild)
@@ -355,6 +357,7 @@ case class REPLesent(
   private val helpMessage = """Usage:
     |  next          n      >     go to next build/slide
     |  previous      p      <     go back to previous build/slide
+    |  redraw        z            redraw the current build/slide
     |  Next          N      >>    go to next slide
     |  Previous      P      <<    go back to previous slide
     |  i next        i n          advance i slides
@@ -525,6 +528,9 @@ case class REPLesent(
   def previous: Unit = show(deck.previousBuild)
   def p: Unit = previous
   def < : Unit = previous
+
+  def redraw: Unit = show(deck.redrawBuild)
+  def z: Unit = redraw
 
   def Next: Unit = 1.next
   def N: Unit = Next
