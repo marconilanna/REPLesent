@@ -49,7 +49,11 @@ It is not meant to be compiled as a standalone application
 
 We recommend you install and use the full Scala distribution
 (the `scala` command) instead of just the `sbt` console.
-Scala 2.11.4 or later and JDK 7 or later are the preferred versions.
+Scala 2.11.4 or later and JDK 7 or later are the preferred versions. 
+If you are using Windows, you need to run `scala` in
+[ANSICON](https://github.com/adoxa/ansicon) or another console that
+supports ANSI escape codes. REPLesent will not render correctly in
+Windows' standard `cmd` console.
 
 To get started, download and save to the same folder the files
 `REPLesent.scala` and `REPLesent.txt`.
