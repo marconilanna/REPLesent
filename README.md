@@ -36,7 +36,7 @@ No other presentation tool can do that for you!
 Quick Tour
 ----------
 
-[![Screencast](https://raw.githubusercontent.com/marconilanna/REPLesent/master/screencast.png)](https://asciinema.org/a/16690)
+[![asciicast](https://asciinema.org/a/16690.png)](https://asciinema.org/a/16690)
 
 Getting Started
 ---------------
