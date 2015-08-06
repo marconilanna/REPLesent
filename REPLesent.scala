@@ -402,7 +402,7 @@ case class REPLesent(
           """forSome|if|implicit|import|lazy|match|new|object|override|package|private|""" +
           """protected|return|sealed|super|throw|trait|try|type|val|var|while|with|yield)\b""").r
       , "\\\\c" -> ("""\b(?:contains|exists|filter|filterNot|find|flatMap|flatten|fold|""" +
-        """forall|foreach|getOrElse|map|orElse)\b""").r
+          """forall|foreach|getOrElse|map|orElse)\b""").r
       , "\\\\g" -> ("""\b(?:true|false|null|this)\b""").r
       , "\\\\b" -> ("""(?i)\b(?:(?:0(?:[0-7]+|X[0-9A-F]+))L?|(?:(?:0|[1-9][0-9]*)""" +
           """(?:(?:\.[0-9]+)?(?:E[+\-]?[0-9]+)?F?|L?))|\\.[0-9]+(?:E[+\-]?[0-9]+)?F?)\b""").r
