@@ -45,11 +45,11 @@ case class REPLesent(
 
           val stty = Seq("sh", "-c", "stty size < /dev/tty").!!
 
-          stty.trim.split(' ') map { _.toInt }
+          stty.trim.split(' ') map (_.toInt)
         } getOrElse Array(0, 0)
 
-        val screenWidth = Seq(width, w) find { _ > 0 } getOrElse defaultWidth
-        val screenHeight = Seq(height, h) find { _ > 0 } getOrElse defaultHeight
+        val screenWidth = Seq(width, w) find (_ > 0) getOrElse defaultWidth
+        val screenHeight = Seq(height, h) find (_ > 0) getOrElse defaultHeight
 
         (screenWidth, screenHeight)
       }
@@ -68,9 +68,10 @@ case class REPLesent(
 
     val whiteSpace = " "
 
-    val blankLine = sinistral + {
-      if (dextral.isEmpty) "" else whiteSpace * horizontalSpace + dextral
-    } + newline
+    val blankLine = {
+      val padding = if (dextral.isEmpty) "" else whiteSpace * horizontalSpace + dextral
+      sinistral + padding + newline
+    }
   }
 
   private val config = Config(width = width, height = height)
@@ -90,7 +91,7 @@ case class REPLesent(
       protected def horizontalSpace = config.horizontalSpace
 
       protected def fill(line: Line, left: Int, right: Int): String = {
-        whiteSpace * left  + line + whiteSpace * right
+        whiteSpace * left + line + whiteSpace * right
       }
 
       def apply(line: Line, margin: Int): String
@@ -349,7 +350,7 @@ case class REPLesent(
       } else if (code.isEmpty) {
         Console.err.print("No code for you")
       } else {
-        repl foreach { _ interpret code }
+        repl foreach (_ interpret code)
       }
     }
   }
@@ -509,7 +510,7 @@ case class REPLesent(
   private def show(build: Option[Build]): Unit = {
     if (build.isEmpty) Console.err.print("No slide for you")
 
-    build foreach { b => print(render(b)) }
+    build foreach (b => print(render(b)))
   }
 
   implicit class Ops(val i: Int) {

@@ -925,7 +925,6 @@ class REPLesentSpec extends FreeSpec {
 
     val (w, h) = (5, 5)
 
-
     "First" in {
       val replesent = REPLesent(w, h, testFile("navigation_build"))
 
@@ -1188,7 +1187,6 @@ class REPLesentSpec extends FreeSpec {
         assert(slide2_build2.output === slide('c', 'd'))
         assert(slide2_build2.error.isEmpty)
       }
-
 
       "Multiple next after last, then previous" in {
         val replesent = REPLesent(w, h, testFile("navigation_build"))
