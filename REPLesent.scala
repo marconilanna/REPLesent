@@ -29,6 +29,7 @@ case class REPLesent(
   , sinistral: String = "* "
   , dextral: String = " *"
   , newline: String = System.lineSeparator
+  , whiteSpace: String = " "
   , private val width: Int
   , private val height: Int
   ) {
@@ -65,8 +66,6 @@ case class REPLesent(
 
     val verticalSpace = screenHeight - 3 // accounts for header, footer, and REPL prompt
     val horizontalSpace = screenWidth - sinistral.length - dextral.length
-
-    val whiteSpace = " "
 
     val blankLine = {
       val padding = if (dextral.isEmpty) "" else whiteSpace * horizontalSpace + dextral
@@ -229,7 +228,7 @@ case class REPLesent(
       var drop = 0
       var reset = ""
 
-      val content: String = ansiEscape replaceAllIn (line, m =>
+      val content: String = ansiEscape.replaceAllIn(line, m =>
         m.matched(1) match {
           case c if ansiColor.contains(c) => drop += 2; reset = RESET; ansiColor(c)
           case 's' => drop += 2; RESET
@@ -256,7 +255,7 @@ case class REPLesent(
     private def emoji(line: String): (String, Int) = {
       var drop = 0
 
-      val content: String = emojiEscape replaceAllIn (line, m => {
+      val content: String = emojiEscape.replaceAllIn(line, m => {
         m.group(1) match {
           case e if emojis.contains(e) => drop += m.matched.length - 1; emojis(e)
           case _ => m.matched
@@ -309,19 +308,15 @@ case class REPLesent(
     }
 
     private def select(slide: Int = slideCursor, build: Int = 0): Option[Build] = {
-      import math.{max, min}
-
       // "Stops" the cursor one position after/before the last/first slide to avoid
       // multiple next/previous calls taking it indefinitely away from the deck
-      slideCursor = max(-1, min(slides.size, slide))
+      slideCursor = slide.min(slides.size).max(-1)
 
       buildCursor = build
 
       if (currentSlideIsDefined && currentSlide.hasBuild(buildCursor)) {
         Some(currentSlide.build(buildCursor, footer))
-      } else {
-        None
-      }
+      } else None
     }
 
     def jumpTo(n: Int): Option[Build] = select(slide = n)
@@ -350,7 +345,7 @@ case class REPLesent(
       } else if (code.isEmpty) {
         Console.err.print("No code for you")
       } else {
-        repl foreach (_ interpret code)
+        repl foreach (_.interpret(code))
       }
     }
   }
@@ -413,7 +408,7 @@ case class REPLesent(
 
       def apply(line: String): (Line, Option[String]) = {
         val l = Line("< " + (line /: regex) { case (line, (color, regex)) =>
-          regex replaceAllIn (line, m =>
+          regex.replaceAllIn(line, m =>
             color + m + "\\\\s"
           )
         })
@@ -441,7 +436,7 @@ case class REPLesent(
 
       def pushBuild: Acc = copy(
         builds = builds :+ content.size
-      , code = code :+ (codeAcc mkString newline)
+      , code = code :+ codeAcc.mkString(newline)
       , codeAcc = IndexedSeq.empty
       )
 
@@ -510,7 +505,9 @@ case class REPLesent(
   private def show(build: Option[Build]): Unit = {
     if (build.isEmpty) Console.err.print("No slide for you")
 
-    build foreach (b => print(render(b)))
+    build foreach { b =>
+      print(render(b))
+    }
   }
 
   implicit class Ops(val i: Int) {
