@@ -492,6 +492,7 @@
 🌚 new_moon_with_face
 📰 newspaper
 🆖 ng
+🙅 ng_woman
 🌃 night_with_stars
 🔕 no_bell
 🚳 no_bicycles
@@ -575,6 +576,7 @@
 👝 pouch
 🍗 poultry_leg
 💷 pound
+😡 pout
 😾 pouting_cat
 🙏 pray
 👸 princess
