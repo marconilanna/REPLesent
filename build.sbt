@@ -78,7 +78,7 @@ unsound-match              Pattern match may not be typesafe
 
 libraryDependencies ++= Seq(
     "org.scala-lang"  % "scala-compiler" % "2.11.7" % Compile
-  , "org.scalatest"  %% "scalatest"      % "2.2.4"  % Test
+  , "org.scalatest"  %% "scalatest"      % "2.2.6"  % Test
 )
 
 // Improved incremental compilation
