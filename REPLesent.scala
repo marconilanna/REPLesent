@@ -392,24 +392,32 @@ case class REPLesent(
     }
 
     object CodeParser extends Parser {
-      private val regex = Seq(
-        "\\\\m" -> ("""\b(?:abstract|case|catch|class|def|do|else|extends|final|finally|for|""" +
-          """forSome|if|implicit|import|lazy|match|new|object|override|package|private|""" +
-          """protected|return|sealed|super|throw|trait|try|type|val|var|while|with|yield)\b""").r
-      , "\\\\c" -> ("""\b(?:contains|exists|filter|filterNot|find|flatMap|flatten|fold|""" +
-          """forall|foreach|getOrElse|map|orElse)\b""").r
-      , "\\\\g" -> ("""\b(?:true|false|null|this)\b""").r
-      , "\\\\b" -> ("""(?i)\b(?:(?:0(?:[0-7]+|X[0-9A-F]+))L?|(?:(?:0|[1-9][0-9]*)""" +
-          """(?:(?:\.[0-9]+)?(?:E[+\-]?[0-9]+)?F?|L?))|\\.[0-9]+(?:E[+\-]?[0-9]+)?F?)\b""").r
-      , "\\\\*" -> ("""\b[$_]*[A-Z][_$A-Z0-9]*[\w$]*\b""").r
-      )
+      private val regex = {
+        val wb = "\\b"
+
+        val colors = Seq("g", "*", "c", "b", "m")
+
+        Seq(
+          """(?:true|false|null|this)"""
+        , """[$_]*[A-Z][_$A-Z0-9]*[\w$]*"""
+        , """(?:contains|exists|filter|filterNot|find|flatMap|flatten|fold|""" +
+            """forall|foreach|getOrElse|map|orElse)"""
+        , """(?i)(?:(?:0(?:[0-7]+|X[0-9A-F]+))L?|(?:(?:0|[1-9][0-9]*)""" +
+            """(?:(?:\.[0-9]+)?(?:E[+\-]?[0-9]+)?F?|L?))|\\.[0-9]+(?:E[+\-]?[0-9]+)?F?)"""
+        , """(?:abstract|case|catch|class|def|do|else|extends|final|finally|for|""" +
+            """forSome|if|implicit|import|lazy|match|new|object|override|package|private|""" +
+            """protected|return|sealed|super|throw|trait|try|type|val|var|while|with|yield)"""
+        ) map { s =>
+          (wb + s + wb).r
+        } zip colors
+      }
 
       def switch: Parser = LineParser
 
       def apply(line: String): (Line, Option[String]) = {
-        val l = Line("< " + (line /: regex) { case (line, (color, regex)) =>
+        val l = Line("< " + (line /: regex) { case (line, (regex, color)) =>
           regex.replaceAllIn(line, m =>
-            color + m + "\\\\s"
+            s"\\\\$color$m\\\\s"
           )
         })
 
