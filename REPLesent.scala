@@ -37,7 +37,14 @@ case class REPLesent(
       val defaultWidth = 80
       val defaultHeight = 25
 
-      if (width > 0 && height > 0) (width, height) else {
+      import jline.TerminalFactory.{get => term}
+
+      if (width > 0 && height > 0) (width, height)
+
+      // if there's a repl with a jline reader, peek at the terminal.
+      // in power mode, vals.reader.asInstanceOf[tools.nsc.interpreter.JLineReader].consoleReader.getTerminal
+      else if (repl.nonEmpty && term != null && term.isSupported) (term.getWidth, term.getHeight)
+      else {
         // Experimental support for screen size auto-detection.
         // Supports only Unix-like systems, including Mac OS X and Linux.
         // Does not work with Microsoft Windows.
@@ -72,6 +79,8 @@ case class REPLesent(
       sinistral + padding + newline
     }
   }
+
+  private val repl = Option(intp)
 
   private val config = Config(width = width, height = height)
 
@@ -365,8 +374,6 @@ case class REPLesent(
     |  run           r      !!    execute code that appears on slide
     |  blank         b            blank screen
     |  help          h      ?     print this help message""".stripMargin
-
-  private val repl = Option(intp)
 
   private val deck = Deck(parseFile(input))
 
