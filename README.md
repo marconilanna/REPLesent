@@ -113,6 +113,7 @@ Command | Shortcut | Symbolic alias | Description
 `next` | `n` | `>` | Go to next build/slide
 `previous` | `p` | `<` | Go back to previous build/slide
 `redraw` | `z` | | Redraw the current build/slide
+`reload` | `y` | | Reload the slides from file
 `Next` | `N` | `>>` | Go to next slide
 `Previous` | `P` | `<<` | Go back to previous slide
 `i next` | `i n` | | Advance i slides
