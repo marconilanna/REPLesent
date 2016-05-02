@@ -337,6 +337,8 @@ case class REPLesent(
 
     def lastBuild: Option[Build] = jumpTo(slides.size) orElse previousBuild
 
+    def currentSlideNumber: Int = slideCursor
+
     def runCode: Unit = {
       val code = currentSlide.code(buildCursor)
 
@@ -368,7 +370,7 @@ case class REPLesent(
 
   private val repl = Option(intp)
 
-  private val deck = Deck(parseFile(input))
+  private var deck = Deck(parseFile(input))
 
   private def parseFile(file: String): IndexedSeq[Slide] = {
     Try {
@@ -517,6 +519,11 @@ case class REPLesent(
       print(render(b))
     }
   }
+  private def reloadDeck(): Unit = {
+    val curSlide = deck.currentSlideNumber
+    deck = Deck(parseFile(input))
+    show(deck.jumpTo(curSlide))
+  }
 
   implicit class Ops(val i: Int) {
     def next: Unit = show(deck.jump(i))
@@ -539,6 +546,9 @@ case class REPLesent(
 
   def redraw: Unit = show(deck.redrawBuild)
   def z: Unit = redraw
+
+  def reload: Unit = reloadDeck
+  def y: Unit = reload
 
   def Next: Unit = 1.next
   def N: Unit = Next
