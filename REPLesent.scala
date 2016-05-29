@@ -387,17 +387,17 @@ case class REPLesent(
   }
 
   private def parse(lines: Iterator[String]): IndexedSeq[Slide] = {
-    sealed trait Parser {
-      def switch: Parser
+    sealed trait LineHandler {
+      def switch: LineHandler
       def apply(line: String): (Line, Option[String])
     }
 
-    object LineParser extends Parser {
-      def switch: Parser = CodeParser
+    object LineHandler extends LineHandler {
+      def switch: LineHandler = CodeHandler
       def apply(line: String): (Line, Option[String]) = (Line(line), None)
     }
 
-    object CodeParser extends Parser {
+    object CodeHandler extends LineHandler {
       private val regex: Seq[(String, Regex)] = {
         val number: Regex = {
           val hex = "(?:0[xX][0-9A-F]+)".r
@@ -424,7 +424,7 @@ case class REPLesent(
         )
       }
 
-      def switch: Parser = LineParser
+      def switch: LineHandler = LineHandler
 
       def apply(line: String): (Line, Option[String]) = {
         val l = Line("< " + (regex.foldLeft(line) { case (line, (color, regex)) =>
@@ -443,14 +443,14 @@ case class REPLesent(
     , deck: IndexedSeq[Slide] = IndexedSeq.empty
     , code: IndexedSeq[String] = IndexedSeq.empty
     , codeAcc: IndexedSeq[String] = IndexedSeq.empty
-    , parser: Parser = LineParser
+    , handler: LineHandler = LineHandler
     ) {
       import config.newline
 
-      def switchParser: Acc = copy(parser = parser.switch)
+      def switchHandler: Acc = copy(handler = handler.switch)
 
       def append(line: String): Acc = {
-        val (l, c) = parser(line)
+        val (l, c) = handler(line)
         copy(content = content :+ l, codeAcc = c.fold(codeAcc)(codeAcc :+ _))
       }
 
@@ -480,7 +480,7 @@ case class REPLesent(
       line match {
         case `slideSeparator` => acc.pushSlide
         case `buildSeparator` => acc.pushBuild
-        case `codeDelimiter` => acc.switchParser
+        case `codeDelimiter` => acc.switchHandler
         case _ => acc.append(line)
       }
     }.pushSlide
