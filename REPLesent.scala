@@ -427,11 +427,11 @@ case class REPLesent(
       def switch: Parser = LineParser
 
       def apply(line: String): (Line, Option[String]) = {
-        val l = Line("< " + (line /: regex) { case (line, (color, regex)) =>
+        val l = Line("< " + (regex.foldLeft(line) { case (line, (color, regex)) =>
           regex.replaceAllIn(line, m =>
             s"\\\\${color}${Regex.quoteReplacement(m.toString)}\\\\s"
           )
-        })
+        }))
 
         (l, Option(line))
       }
@@ -476,7 +476,7 @@ case class REPLesent(
     val buildSeparator = "--"
     val codeDelimiter = "```"
 
-    val acc = (Acc() /: lines) { (acc, line) =>
+    val acc = lines.foldLeft(Acc()) { (acc, line) =>
       line match {
         case `slideSeparator` => acc.pushSlide
         case `buildSeparator` => acc.pushBuild
