@@ -21,7 +21,7 @@ case class REPLesent(
 , slideTotal: Boolean = false
 , intp: scala.tools.nsc.interpreter.IMain = null
 ) {
-  import scala.util.Try
+  import scala.util.{ Try, Success, Failure }
 
   private case class Config(
     top: String = "*"
@@ -376,9 +376,12 @@ case class REPLesent(
     Try {
       val lines = io.Source.fromFile(file).getLines
       parse(lines)
-    } getOrElse {
-      Console.err.print(s"Sorry, could not parse file $file. Quick, say something funny before anyone notices!")
-      IndexedSeq.empty
+    } match {
+      case Failure(e) =>
+        e.printStackTrace
+        Console.err.print(s"Sorry, could not parse file $file. Quick, say something funny before anyone notices!")
+        IndexedSeq.empty
+      case Success(value) => value
     }
   }
 
