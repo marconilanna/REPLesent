@@ -244,8 +244,8 @@ case class REPLesent(
 
     private lazy val emojis: Map[String, String] = {
       Try {
-        val input = io.Source.fromFile("emoji.txt").getLines
-        input.map { l =>
+        val emoji = io.Source.fromFile("emoji.txt").getLines
+        emoji.map { l =>
           val a = l.split(' ')
           (a(1), a(0))
         }.toMap
@@ -374,15 +374,15 @@ case class REPLesent(
 
   private def parseFile(file: String): IndexedSeq[Slide] = {
     Try {
-      val input = io.Source.fromFile(file).getLines
-      parse(input)
+      val lines = io.Source.fromFile(file).getLines
+      parse(lines)
     } getOrElse {
       Console.err.print(s"Sorry, could not parse file $file. Quick, say something funny before anyone notices!")
       IndexedSeq.empty
     }
   }
 
-  private def parse(input: Iterator[String]): IndexedSeq[Slide] = {
+  private def parse(lines: Iterator[String]): IndexedSeq[Slide] = {
     sealed trait Parser {
       def switch: Parser
       def apply(line: String): (Line, Option[String])
@@ -466,7 +466,7 @@ case class REPLesent(
     val buildSeparator = "--"
     val codeDelimiter = "```"
 
-    val acc = (Acc() /: input) { (acc, line) =>
+    val acc = (Acc() /: lines) { (acc, line) =>
       line match {
         case `slideSeparator` => acc.pushSlide
         case `buildSeparator` => acc.pushBuild
