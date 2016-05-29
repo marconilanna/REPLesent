@@ -21,6 +21,7 @@ case class REPLesent(
 , slideTotal: Boolean = false
 , intp: scala.tools.nsc.interpreter.IMain = null
 ) {
+  import scala.util.matching.Regex
   import scala.util.{ Try, Success, Failure }
 
   private case class Config(
@@ -397,30 +398,36 @@ case class REPLesent(
     }
 
     object CodeParser extends Parser {
-      private val regex = {
-        val wb = "\\b"
+      private val regex: Seq[(String, Regex)] = {
+        val number: Regex = {
+          val hex = "(?:0[xX][0-9A-F]+)".r
+          val decimal = "(?:[1-9][0-9]*|0)".r
+          val long = s"(?:${decimal}[DFL])".r
+          val float = s"(?:${decimal}\\.${decimal}[DF])".r
+          val eNotation = s"(?:(?:${decimal}|${float})[eE][+\\-]?[0-9]+)".r
+          s"(?:${eNotation}|${hex}|${long}|${float}|${decimal})".r
+        }
 
-        val colors = Seq("g", "*", "c", "b", "m")
-
-        Seq(
-          """(?:true|false|null|this)"""
-        , """[$_]*[A-Z][_$A-Z0-9]*[\w$]*"""
-        , """(?:contains|exists|filter|filterNot|find|flatMap|flatten|fold|""" +
-            """forall|foreach|getOrElse|map|orElse)"""
-        , """(?i)(?:(?:0(?:[0-7]+|X[0-9A-F]+))L?|(?:(?:0|[1-9][0-9]*)""" +
-            """(?:(?:\.[0-9]+)?(?:E[+\-]?[0-9]+)?F?|L?))|\\.[0-9]+(?:E[+\-]?[0-9]+)?F?)"""
-        , """(?:abstract|case|catch|class|def|do|else|extends|final|finally|for|""" +
-            """forSome|if|implicit|import|lazy|match|new|object|override|package|private|""" +
-            """protected|return|sealed|super|throw|trait|try|type|val|var|while|with|yield)"""
-        ) map { s =>
-          (wb + s + wb).r
-        } zip colors
+        Seq[(String, Regex)](
+          "r" -> "(?:s?\"(?:\\\\\"|[^\"])*\")".r
+        , "c" -> """\b(?:null)\b""".r
+        , "m" -> """\b(?:true|false|this)\b""".r
+        , "g" -> """\b(?:(?<=(?::|=>)\s{0,10})[$_]*[A-Z][_$A-Z0-9]*[\w$]*)\b""".r
+        , "c" -> ("""\b(?:contains|exists|filter|filterNot|find|flatMap|flatten|fold|""" +
+                 """forall|foreach|getOrElse|map|orElse)\b"""
+                 ).r
+        , "r" -> s"""\b(?i)${number}\b""".r
+        , "y" -> ("""\b(?:abstract|case|catch|class|def|do|else|extends|final|finally|for|""" +
+                 """forSome|if|implicit|import|lazy|match|new|object|override|package|private|""" +
+                 """protected|return|sealed|super|throw|trait|try|type|val|var|while|with|yield)\b"""
+                 ).r
+        )
       }
 
       def switch: Parser = LineParser
 
       def apply(line: String): (Line, Option[String]) = {
-        val l = Line("< " + (line /: regex) { case (line, (regex, color)) =>
+        val l = Line("< " + (line /: regex) { case (line, (color, regex)) =>
           regex.replaceAllIn(line, m =>
             s"\\\\$color$m\\\\s"
           )
