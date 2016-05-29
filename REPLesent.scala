@@ -429,7 +429,7 @@ case class REPLesent(
       def apply(line: String): (Line, Option[String]) = {
         val l = Line("< " + (line /: regex) { case (line, (color, regex)) =>
           regex.replaceAllIn(line, m =>
-            s"\\\\$color$m\\\\s"
+            s"\\\\${color}${Regex.quoteReplacement(m.toString)}\\\\s"
           )
         })
 
