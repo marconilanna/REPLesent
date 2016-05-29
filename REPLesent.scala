@@ -16,11 +16,12 @@
 case class REPLesent(
   width: Int = 0
 , height: Int = 0
-, input: String = "REPLesent.txt"
+, source: String = "REPLesent.txt"
 , slideCounter: Boolean = false
 , slideTotal: Boolean = false
 , intp: scala.tools.nsc.interpreter.IMain = null
 ) {
+  import java.io.File
   import scala.util.matching.Regex
   import scala.util.{ Try, Success, Failure }
 
@@ -371,16 +372,28 @@ case class REPLesent(
 
   private val repl = Option(intp)
 
-  private var deck = Deck(parseFile(input))
+  private var deck = Deck(parseSource(source))
 
-  private def parseFile(file: String): IndexedSeq[Slide] = {
+  private def parseSource(path: String): IndexedSeq[Slide] = {
     Try {
-      val lines = io.Source.fromFile(file).getLines
+      val pathFile = new File(path)
+      val lines: Iterator[String] = (
+        if (pathFile.isDirectory) {
+          pathFile
+            .list
+            .sorted
+            .filter(_.endsWith(".replesent"))
+            .flatMap { name => io.Source.fromFile(new File(pathFile, name)).getLines }
+            .toIterator
+        } else {
+          io.Source.fromFile(path).getLines
+        }
+      )
       parse(lines)
     } match {
       case Failure(e) =>
         e.printStackTrace
-        Console.err.print(s"Sorry, could not parse file $file. Quick, say something funny before anyone notices!")
+        Console.err.print(s"Sorry, could not parse $path. Quick, say something funny before anyone notices!")
         IndexedSeq.empty
       case Success(value) => value
     }
@@ -531,7 +544,7 @@ case class REPLesent(
   }
   private def reloadDeck(): Unit = {
     val curSlide = deck.currentSlideNumber
-    deck = Deck(parseFile(input))
+    deck = Deck(parseSource(source))
     show(deck.jumpTo(curSlide))
   }
 
