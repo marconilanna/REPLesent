@@ -265,6 +265,8 @@ case class REPLesent(
       (content, drop)
     }
 
+    def raw(line: String): Line = Line(line, line.length, LeftAligned)
+
     def apply(line: String): Line = {
       val (l1, lineStyle) = style(line)
       val (l2, ansiDrop) = ansi(l1)
@@ -441,8 +443,13 @@ case class REPLesent(
 
       def append(line: String): Acc = {
         val (l, c) = parser(line)
-        copy(content = content :+ l, codeAcc = c.fold(codeAcc)(codeAcc :+ _))
+        copyContent(l, c)
       }
+
+      def appendRaw(line: String): Acc = copyContent(Line.raw(line), Option(line))
+
+      private def copyContent(l: Line, c: Option[String]): Acc =
+        copy(content = content :+ l, codeAcc = c.fold(codeAcc)(codeAcc :+ _))
 
       def pushBuild: Acc = copy(
         builds = builds :+ content.size
@@ -465,17 +472,131 @@ case class REPLesent(
     val slideSeparator = "---"
     val buildSeparator = "--"
     val codeDelimiter = "```"
+    val directiveOpen = "{"
+    val directiveClose = "}"
+
+    def isDirective(s: String): Boolean = (s startsWith directiveOpen) && (s endsWith directiveClose)
+    def extractDirective(s: String): String = s.drop(1).dropRight(1).trim
 
     val acc = (Acc() /: input) { (acc, line) =>
       line match {
         case `slideSeparator` => acc.pushSlide
         case `buildSeparator` => acc.pushBuild
         case `codeDelimiter` => acc.switchParser
+        case s if isDirective(s.trim) =>
+          Directive.run(extractDirective(s.trim)).foldLeft(acc)(_.appendRaw(_))
         case _ => acc.append(line)
       }
     }.pushSlide
 
     acc.deck
+  }
+
+  private sealed trait Directive {
+    def apply(args: Seq[String]): Iterator[String]
+  }
+
+  private object Directive {
+    def run(s: String): Iterator[String] = {
+      val tokens: Seq[String] = ("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'".r findAllIn s).toSeq
+      tokens.head match {
+        case "IncludeRaw" => IncludeRaw(args = tokens.tail)
+        case "Quote" => Quote(args = tokens.tail)
+        case directive =>
+          Console.err.println(s"Unknown directive: $directive")
+          Iterator.empty
+      }
+    }
+  }
+
+  private def fileLines(filename: String): Iterator[String] =
+    Try {
+      io.Source.fromFile(filename).getLines
+    } getOrElse {
+      Console.err.println(s"Could not read text from file $filename")
+      Iterator.empty
+    }
+
+  private object IncludeRaw extends Directive {
+    def apply(args: Seq[String]): Iterator[String] =
+      args.headOption map fileLines getOrElse {
+        Console.err.println("No args supplied for directive IncludeRaw")
+        Iterator.empty
+      }
+  }
+
+  private object Quote extends Directive {
+    val defaultQuoteWidth = 40
+
+    implicit class QuoteUtils(s: String) {
+      def lineWrap(maxCols: Int): Seq[String] =
+        s.split(" ").foldLeft(Array(""))( (acc, word) => {
+          if ((acc.last + " " + word).trim.length > maxCols) acc :+ word
+          else {
+            val updatedLine = if (acc.last.isEmpty) word else acc.last + " " + word
+            acc.updated(acc.size - 1, updatedLine)
+          }
+        })
+
+      def stripQuotes: String = s.replaceAll("^\"|\"$", "")
+    }
+
+    def apply(args: Seq[String]): Iterator[String] = {
+      import config._
+
+      val bubbleBorderMaxWidth = 2
+
+      def addBubble(lines: Seq[String]): Iterator[String] = {
+        val longest: Int = lines.map(_.length).max
+        val topLine = whiteSpace + "_" * (longest + 2)
+        val bottomLine = whiteSpace + "-" * (longest + 2)
+
+        case class BubbleBorder(private val openB: String, private val closeB: String) {
+          val open = openB.substring(0, bubbleBorderMaxWidth)
+          val close = closeB.substring(closeB.length - bubbleBorderMaxWidth)
+        }
+
+        lazy val borderSingleLine = BubbleBorder("< ", " >")
+        lazy val borderFirstLine = BubbleBorder("/ ", " \\")
+        lazy val borderMiddleLines = BubbleBorder("| ", " |")
+        lazy val borderLastLine = BubbleBorder("\\ ", " /")
+
+        def addBorder(textLine: String, border: BubbleBorder): String = {
+          val sb = StringBuilder.newBuilder
+          sb ++= border.open
+          sb ++= textLine
+          sb ++= whiteSpace * (longest - textLine.length)
+          sb ++= border.close
+          sb.toString
+        }
+
+        val textLines: Iterator[String] = lines.size match {
+          case 0 => Iterator.empty
+          case 1 => Iterator(addBorder(lines.head, borderSingleLine))
+          case _ =>
+            Iterator(addBorder(lines.head, borderFirstLine)) ++
+              lines.drop(1).dropRight(1).map(addBorder(_, borderMiddleLines)) ++
+              Iterator(addBorder(lines.last, borderLastLine))
+        }
+        Iterator(topLine) ++ textLines ++ Iterator(bottomLine)
+      }
+
+      def quoteText(filename: String, quote: String, quoteWidth: Int): Iterator[String] =
+        addBubble(quote.stripQuotes.lineWrap(quoteWidth)) ++ fileLines(filename)
+
+      args match {
+        case filename +: quote +: restArgs =>
+          val requestedQuoteWidth = Try {
+            restArgs.head.toInt
+          } getOrElse defaultQuoteWidth
+          val totalBorderWidth = bubbleBorderMaxWidth * 2 + sinistral.length + dextral.length
+          val quoteWidth = Math.min(requestedQuoteWidth, width - totalBorderWidth)
+          quoteText(filename, quote, quoteWidth)
+        case _ =>
+          Console.err.println("Incomplete args supplied for directive Quote")
+          Iterator.empty
+      }
+    }
   }
 
   private def render(build: Build): String = {

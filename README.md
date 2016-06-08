@@ -31,6 +31,7 @@ Features
 * Syntax highlighting
 * Run code straight from slides directly in the REPL with a single keystroke.
 No other presentation tool can do that for you!
+* Include files in slides and add quote bubbles ([@oranda](https://github.com/oranda))
 * And the #1 requested feature: emoji! :-) I mean, :smile:
 
 Quick Tour
@@ -167,6 +168,27 @@ Command | Description
 An optional pattern may be specified immediately following the forward slash.
 Unicode characters and ANSI color escapes (as above) are supported.
 
+### Directives
+
+A directive is one line of text enclosed by curly braces, for example:
+
+```
+{ Quote test/resources/ascii-art/test_eyeballs.txt "Hello World!" 60 }
+```
+
+Supported directives are:
+
+* `IncludeRaw file_path`
+   
+   Includes a file from the filesystem without parsing any markup.
+
+* `Quote file_path quote [quote_bubble_width]`     
+   
+   Similar to the `cowsay` UNIX utility: shows a cow or whatever picture is 
+   in `file_path` and above it a quotation  supplied by `quote` (which should 
+   be in quotation marks), surrounded by a speech bubble. The default width
+   is 40 but can be changed by supplying `quote_bubble_width`.
+   
 ### Emoji
 
 To enable emoji support, you will need a copy of the `emoji.txt` file.

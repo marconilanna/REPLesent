@@ -1,0 +1,22 @@
+ASCII art files are adapted from:
+
+* http://coolfbk.blogspot.nl/2009/04/cool-figures-made-with-symbols.html (Creative Commons Licence):
+ ipod.txt
+ thumbsup.txt
+ 
+* http://coolfbk.blogspot.nl/2011/11/christmas-facebook-symbols.html (Creative Commons Licence):
+ snowman.txt
+
+* http://www.ascii-art.net/content.php?id=animals
+ bat.txt - Daryl Rece
+ bigcat.txt - SSt
+ bird.txt - Koshy George
+ dolphin.txt - Armando Frazao (Seal)
+ fish.txt - SSt
+ smallcat.txt - SSt
+ 
+* http://chris.com/ascii/index.php?art=animals/cows
+ cow.txt - Traditional cow smiley
+
+
+

@@ -229,6 +229,17 @@ And then use it:
 for (i <- 1 to last) yield i * i
 ```
 ---
+You can include ASCII art from other files. Remember the
+UNIX utility cowsay?
+
+Generate quotes by writing a "directive" like this:
+
+--
+\c{ Quote sample-ascii/cow.txt "Scala is an expressive language..." }
+--
+
+{ Quote sample-ascii/cow.txt "Scala is an expressive and elegant language that allows you to write less code, so that you can spend more time compiling it." }
+---
 Of course, I saved the best for last:
 --
 

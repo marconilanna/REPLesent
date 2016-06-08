@@ -1,0 +1,1 @@
+{ IncludeRaw test/resources/ascii-art/test_square.txt }

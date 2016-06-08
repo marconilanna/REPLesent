@@ -1,0 +1,1 @@
+{ Quote test/resources/ascii-art/test_eyeballs.txt "Hello World! As the default width is only 40 chars, this should run over into three lines." }
