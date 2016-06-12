@@ -413,27 +413,38 @@ case class REPLesent(
     object CodeHandler extends LineHandler {
       private val regex: Seq[(String, Regex)] = {
         val number: Regex = {
-          val hex = "(?:0[xX][0-9A-F]+)".r
+          val hex = "(?:0[xX][0-9A-Fa-f]+)".r
           val decimal = "(?:[1-9][0-9]*|0)".r
-          val long = s"(?:${decimal}[DFL])".r
-          val float = s"(?:${decimal}\\.${decimal}[DF])".r
+          val long = s"(?:${decimal}[DFLdfl])".r
+          val float = s"(?:${decimal}\\.${decimal}[DFdf])".r
           val eNotation = s"(?:(?:${decimal}|${float})[eE][+\\-]?[0-9]+)".r
-          s"(?:${eNotation}|${hex}|${long}|${float}|${decimal})".r
+          s"""\b(?:${eNotation}|${hex}|${long}|${float}|${decimal})\b""".r
         }
 
+        val string: Regex = "(?:s?\"(?:\\\\\"|[^\"])*\")".r
+        val reserved: Regex = (
+          """\b(?:null|contains|exists|filter|filterNot|find|flatMap|""" +
+          """flatten|fold|forall|foreach|getOrElse|map|orElse)\b"""
+        ).r
+        val special: Regex = """\b(?:true|false|this)\b""".r
+        val typeSig: Regex = (
+          """\b(?:(?<=(?::|=>)\s{0,10})[$_]*[A-Z][_$A-Z0-9]*[\w$]*)\b"""
+        ).r
+
+        val syntax: Regex = (
+          """\b(?:abstract|case|catch|class|def|do|else|extends|final|""" +
+          """finally|for|forSome|if|implicit|import|lazy|match|new|""" +
+          """object|override|package|private|protected|return|sealed|""" +
+          """super|throw|trait|try|type|val|var|while|with|yield)\b"""
+        ).r
+
         Seq[(String, Regex)](
-          "r" -> "(?:s?\"(?:\\\\\"|[^\"])*\")".r
-        , "c" -> """\b(?:null)\b""".r
-        , "m" -> """\b(?:true|false|this)\b""".r
-        , "g" -> """\b(?:(?<=(?::|=>)\s{0,10})[$_]*[A-Z][_$A-Z0-9]*[\w$]*)\b""".r
-        , "c" -> ("""\b(?:contains|exists|filter|filterNot|find|flatMap|flatten|fold|""" +
-                 """forall|foreach|getOrElse|map|orElse)\b"""
-                 ).r
-        , "r" -> s"""\b(?i)${number}\b""".r
-        , "y" -> ("""\b(?:abstract|case|catch|class|def|do|else|extends|final|finally|for|""" +
-                 """forSome|if|implicit|import|lazy|match|new|object|override|package|private|""" +
-                 """protected|return|sealed|super|throw|trait|try|type|val|var|while|with|yield)\b"""
-                 ).r
+          "r" -> string
+        , "c" -> reserved
+        , "m" -> special
+        , "g" -> typeSig
+        , "r" -> number
+        , "y" -> syntax
         )
       }
 
