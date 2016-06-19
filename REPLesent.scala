@@ -427,9 +427,11 @@ case class REPLesent(
           s"""flatten|fold|forall|foreach|getOrElse|map|orElse)\\b"""
         ).r
         val special: Regex = s"""\\b(?:true|false|this)\\b""".r
-        val typeSig: Regex = (
-          s"""\\b(?:(?<=(?::|=>)\s{0,10})[$_]*[A-Z][_$A-Z0-9]*[\w$]*)\\b"""
-        ).r
+        val typeSig: Regex = {
+          val token: String => String = { limit => s"[$$_]${limit}[A-Z][_$$A-Z0-9]${limit}[\\w$$]${limit}" }
+          val prefix: String = s"""(?<=(?::)\\s{0,10}|\\btype ${token("{0,10}")}\\s{0,10}=\\s{0,10})"""
+          s"""\\b(?:${prefix}(?:${token("*")}|\\s*=>\\s*|\\s*with\\s*)*)\\b"""
+        }.r
 
         val syntax: Regex = (
           s"""\\b(?:abstract|case|catch|class|def|do|else|extends|final|""" +
