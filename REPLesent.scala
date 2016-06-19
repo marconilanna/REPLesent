@@ -418,24 +418,24 @@ case class REPLesent(
           val long = s"(?:${decimal}[DFLdfl])".r
           val float = s"(?:${decimal}\\.${decimal}[DFdf])".r
           val eNotation = s"(?:(?:${decimal}|${float})[eE][+\\-]?[0-9]+)".r
-          s"""\b(?:${eNotation}|${hex}|${long}|${float}|${decimal})\b""".r
+          s"""\\b(?:${eNotation}|${hex}|${long}|${float}|${decimal})\\b""".r
         }
 
         val string: Regex = "(?:s?\"(?:\\\\\"|[^\"])*\")".r
         val reserved: Regex = (
-          """\b(?:null|contains|exists|filter|filterNot|find|flatMap|""" +
-          """flatten|fold|forall|foreach|getOrElse|map|orElse)\b"""
+          s"""\\b(?:null|contains|exists|filter|filterNot|find|flatMap|""" +
+          s"""flatten|fold|forall|foreach|getOrElse|map|orElse)\\b"""
         ).r
-        val special: Regex = """\b(?:true|false|this)\b""".r
+        val special: Regex = s"""\\b(?:true|false|this)\\b""".r
         val typeSig: Regex = (
-          """\b(?:(?<=(?::|=>)\s{0,10})[$_]*[A-Z][_$A-Z0-9]*[\w$]*)\b"""
+          s"""\\b(?:(?<=(?::|=>)\s{0,10})[$_]*[A-Z][_$A-Z0-9]*[\w$]*)\\b"""
         ).r
 
         val syntax: Regex = (
-          """\b(?:abstract|case|catch|class|def|do|else|extends|final|""" +
-          """finally|for|forSome|if|implicit|import|lazy|match|new|""" +
-          """object|override|package|private|protected|return|sealed|""" +
-          """super|throw|trait|try|type|val|var|while|with|yield)\b"""
+          s"""\\b(?:abstract|case|catch|class|def|do|else|extends|final|""" +
+          s"""finally|for|forSome|if|implicit|import|lazy|match|new|""" +
+          s"""object|override|package|private|protected|return|sealed|""" +
+          s"""super|throw|trait|try|type|val|var|while|with|yield)\\b"""
         ).r
 
         Seq[(String, Regex)](
