@@ -417,7 +417,7 @@ case class REPLesent(
           val decimal = "(?:[1-9][0-9]*|0)"
           val long = s"(?:${decimal}[DFLdfl])"
           val float = s"(?:${decimal}\\.${decimal}[DFdf])"
-          val eNotation = s"(?:(?:${decimal}|${float})[eE][+\\-]?[0-9]+)"
+          val eNotation = s"(?:${decimal}(?:\\.0?${decimal})?[eE][+\\-]?[0-9]+)"
           s"""\\b(?:${eNotation}|${hex}|${long}|${float}|${decimal})\\b""".r
         }
 
