@@ -413,11 +413,11 @@ case class REPLesent(
     object CodeHandler extends LineHandler {
       private val patterns: Seq[(String, Regex)] = {
         val number: Regex = {
-          val hex = "(?:0[xX][0-9A-Fa-f]+)".r
-          val decimal = "(?:[1-9][0-9]*|0)".r
-          val long = s"(?:${decimal}[DFLdfl])".r
-          val float = s"(?:${decimal}\\.${decimal}[DFdf])".r
-          val eNotation = s"(?:(?:${decimal}|${float})[eE][+\\-]?[0-9]+)".r
+          val hex = "(?:0[xX][0-9A-Fa-f]+)"
+          val decimal = "(?:[1-9][0-9]*|0)"
+          val long = s"(?:${decimal}[DFLdfl])"
+          val float = s"(?:${decimal}\\.${decimal}[DFdf])"
+          val eNotation = s"(?:(?:${decimal}|${float})[eE][+\\-]?[0-9]+)"
           s"""\\b(?:${eNotation}|${hex}|${long}|${float}|${decimal})\\b""".r
         }
 
