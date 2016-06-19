@@ -178,13 +178,35 @@ You can look at `emoji.txt` for the definitive list of supported emoji.
 Emojis can be combined with horizontal rulers and,
 depending on your system fonts, ANSI colors, too.
 
-Emoji has only be tested on Mac OS X Terminal.app, YMMV.
+Emoji has only be tested on Mac OS X Terminal.app and Gnome Terminal, YMMV.
+
+### Multiple File Support
+
+As your `REPLesent.txt` grows, you may find yourself needing to split slides into logical chunks for quick navigation.
+
+In order to use this mode, simply place all your individual slide files into a directory (in this example, we'll be using the directory name `"slides"`), all ending with the file extension `.replesent`.
+
+Then, initialize REPLesent with the additional parameter `source="slides"`, which will concatinate all files in ASCIIbetical order. Suggested practice is to name files with a leading sequence number, padding with zeros (01, 02, 03 ... 14, 15 ...)
+
+One caveat is that since this is strict file concatination, slide separators will not be added automatically, so please remember to end your files with `---` or `--`.
+
+### Vim Syntax Highlighting
+
+Included in this repository is a `vim` directory, which contains a vim plugin for editing REPLesent slides.
+
+This plugin depends on [derekwyatt/vim-scala](https://github.com/derekwyatt/vim-scala/) for Scala syntax highlighting.
+
+Simply copy the files into your `~/.vim` directory to get started, or use [Vundle](https://github.com/VundleVim/Vundle.vim) (or similar) like:
+
+    Plugin 'derekwyatt/vim-scala'
+    Plugin 'marconilanna/REPLesent', {'rtp': 'vim/'}
 
 Thanks
 ------
 
 * [Davis Z. Cabral](https://github.com/daviscabral) for implementing
 horizontal ruler support.
+* [Devon Stewart](https://github.com/blast-hardcheese/) for adding multi-file support, a vim plugin, and enhancing code block syntax highlighting support.
 
 > *I don't care if it is used, I just want it to be useful*
 
