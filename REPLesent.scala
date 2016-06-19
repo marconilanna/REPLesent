@@ -411,7 +411,7 @@ case class REPLesent(
     }
 
     object CodeHandler extends LineHandler {
-      private val regex: Seq[(String, Regex)] = {
+      private val patterns: Seq[(String, Regex)] = {
         val number: Regex = {
           val hex = "(?:0[xX][0-9A-Fa-f]+)".r
           val decimal = "(?:[1-9][0-9]*|0)".r
@@ -453,13 +453,22 @@ case class REPLesent(
       def switch: LineHandler = LineHandler
 
       def apply(line: String): (Line, Option[String]) = {
-        val l = Line("< " + (regex.foldLeft(line) { case (line, (color, regex)) =>
-          regex.replaceAllIn(line, m =>
-            s"\\\\${color}${Regex.quoteReplacement(m.toString)}\\\\s"
-          )
-        }))
+        val (colors, regexes) = patterns.unzip
 
-        (l, Option(line))
+        // new Regex("(?:(a)|(b)|(c))") will produce
+        // m.subgroups List(null, "b", null) when applied on "b"
+        val regex = new Regex(s"(?:(${regexes.mkString(")|(")}))")
+
+        val formatted = regex.replaceAllIn(line, { m =>
+          val colorIdx = m.subgroups.indexWhere(_ != null)
+          colors.drop(colorIdx).take(1).headOption
+            .map({ color =>
+              s"\\\\${color}${Regex.quoteReplacement(m.toString)}\\\\s"
+            })
+            .getOrElse(line)
+        })
+
+        (Line("< " + formatted), Option(line))
       }
     }
 
