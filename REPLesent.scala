@@ -16,12 +16,14 @@
 case class REPLesent(
   width: Int = 0
 , height: Int = 0
-, input: String = "REPLesent.txt"
+, source: String = "REPLesent.txt"
 , slideCounter: Boolean = false
 , slideTotal: Boolean = false
 , intp: scala.tools.nsc.interpreter.IMain = null
 ) {
-  import scala.util.Try
+  import java.io.File
+  import scala.util.matching.Regex
+  import scala.util.{ Try, Success, Failure }
 
   private case class Config(
     top: String = "*"
@@ -244,8 +246,8 @@ case class REPLesent(
 
     private lazy val emojis: Map[String, String] = {
       Try {
-        val input = io.Source.fromFile("emoji.txt").getLines
-        input.map { l =>
+        val emoji = io.Source.fromFile("emoji.txt").getLines
+        emoji.map { l =>
           val a = l.split(' ')
           (a(1), a(0))
         }.toMap
@@ -370,60 +372,103 @@ case class REPLesent(
 
   private val repl = Option(intp)
 
-  private var deck = Deck(parseFile(input))
+  private var deck = Deck(parseSource(source))
 
-  private def parseFile(file: String): IndexedSeq[Slide] = {
+  private def parseSource(path: String): IndexedSeq[Slide] = {
     Try {
-      val input = io.Source.fromFile(file).getLines
-      parse(input)
-    } getOrElse {
-      Console.err.print(s"Sorry, could not parse file $file. Quick, say something funny before anyone notices!")
-      IndexedSeq.empty
+      val pathFile = new File(path)
+      val lines: Iterator[String] = (
+        if (pathFile.isDirectory) {
+          pathFile
+            .list
+            .sorted
+            .filter(_.endsWith(".replesent"))
+            .flatMap { name => io.Source.fromFile(new File(pathFile, name)).getLines }
+            .toIterator
+        } else {
+          io.Source.fromFile(path).getLines
+        }
+      )
+      parse(lines)
+    } match {
+      case Failure(e) =>
+        e.printStackTrace
+        Console.err.print(s"Sorry, could not parse $path. Quick, say something funny before anyone notices!")
+        IndexedSeq.empty
+      case Success(value) => value
     }
   }
 
-  private def parse(input: Iterator[String]): IndexedSeq[Slide] = {
-    sealed trait Parser {
-      def switch: Parser
+  private def parse(lines: Iterator[String]): IndexedSeq[Slide] = {
+    sealed trait LineHandler {
+      def switch: LineHandler
       def apply(line: String): (Line, Option[String])
     }
 
-    object LineParser extends Parser {
-      def switch: Parser = CodeParser
+    object LineHandler extends LineHandler {
+      def switch: LineHandler = CodeHandler
       def apply(line: String): (Line, Option[String]) = (Line(line), None)
     }
 
-    object CodeParser extends Parser {
-      private val regex = {
-        val wb = "\\b"
+    object CodeHandler extends LineHandler {
+      private val patterns: Seq[(String, Regex)] = {
+        val number: Regex = {
+          val hex = "(?:0[xX][0-9A-Fa-f]+)"
+          val decimal = "(?:[1-9][0-9]*|0)"
+          val long = s"(?:${decimal}[DFLdfl])"
+          val float = s"(?:${decimal}\\.${decimal}[DFdf])"
+          val eNotation = s"(?:${decimal}(?:\\.0?${decimal})?[eE][+\\-]?[0-9]+)"
+          s"""\\b(?:${eNotation}|${hex}|${long}|${float}|${decimal})\\b""".r
+        }
 
-        val colors = Seq("g", "*", "c", "b", "m")
+        val string: Regex = "(?:s?\"(?:\\\\\"|[^\"])*\")".r
+        val reserved: Regex = (
+          s"""\\b(?:null|contains|exists|filter|filterNot|find|flatMap|""" +
+          s"""flatten|fold|forall|foreach|getOrElse|map|orElse)\\b"""
+        ).r
+        val special: Regex = s"""\\b(?:true|false|this)\\b""".r
+        val typeSig: Regex = {
+          val token: String => String = { limit => s"[$$_]${limit}[A-Z][_$$A-Z0-9]${limit}[\\w$$]${limit}" }
+          val prefix: String = s"""(?<=(?::)\\s{0,10}|\\btype ${token("{0,10}")}\\s{0,10}=\\s{0,10})"""
+          s"""\\b(?:${prefix}(?:${token("*")}|\\s*=>\\s*|\\s*with\\s*)*)\\b"""
+        }.r
 
-        Seq(
-          """(?:true|false|null|this)"""
-        , """[$_]*[A-Z][_$A-Z0-9]*[\w$]*"""
-        , """(?:contains|exists|filter|filterNot|find|flatMap|flatten|fold|""" +
-            """forall|foreach|getOrElse|map|orElse)"""
-        , """(?i)(?:(?:0(?:[0-7]+|X[0-9A-F]+))L?|(?:(?:0|[1-9][0-9]*)""" +
-            """(?:(?:\.[0-9]+)?(?:E[+\-]?[0-9]+)?F?|L?))|\\.[0-9]+(?:E[+\-]?[0-9]+)?F?)"""
-        , """(?:abstract|case|catch|class|def|do|else|extends|final|finally|for|""" +
-            """forSome|if|implicit|import|lazy|match|new|object|override|package|private|""" +
-            """protected|return|sealed|super|throw|trait|try|type|val|var|while|with|yield)"""
-        ) map { s =>
-          (wb + s + wb).r
-        } zip colors
+        val syntax: Regex = (
+          s"""\\b(?:abstract|case|catch|class|def|do|else|extends|final|""" +
+          s"""finally|for|forSome|if|implicit|import|lazy|match|new|""" +
+          s"""object|override|package|private|protected|return|sealed|""" +
+          s"""super|throw|trait|try|type|val|var|while|with|yield)\\b"""
+        ).r
+
+        Seq[(String, Regex)](
+          "r" -> string
+        , "c" -> reserved
+        , "m" -> special
+        , "g" -> typeSig
+        , "r" -> number
+        , "y" -> syntax
+        )
       }
 
-      def switch: Parser = LineParser
+      def switch: LineHandler = LineHandler
 
       def apply(line: String): (Line, Option[String]) = {
-        val l = Line("< " + (line /: regex) { case (line, (regex, color)) =>
-          regex.replaceAllIn(line, m =>
-            s"\\\\$color$m\\\\s"
-          )
+        val (colors, regexes) = patterns.unzip
+
+        // new Regex("(?:(a)|(b)|(c))") will produce
+        // m.subgroups List(null, "b", null) when applied on "b"
+        val regex = new Regex(s"(?:(${regexes.mkString(")|(")}))")
+
+        val formatted = regex.replaceAllIn(line, { m =>
+          val colorIdx = m.subgroups.indexWhere(_ != null)
+          colors.drop(colorIdx).take(1).headOption
+            .map({ color =>
+              s"\\\\${color}${Regex.quoteReplacement(m.toString)}\\\\s"
+            })
+            .getOrElse(line)
         })
 
-        (l, Option(line))
+        (Line("< " + formatted), Option(line))
       }
     }
 
@@ -433,14 +478,14 @@ case class REPLesent(
     , deck: IndexedSeq[Slide] = IndexedSeq.empty
     , code: IndexedSeq[String] = IndexedSeq.empty
     , codeAcc: IndexedSeq[String] = IndexedSeq.empty
-    , parser: Parser = LineParser
+    , handler: LineHandler = LineHandler
     ) {
       import config.newline
 
-      def switchParser: Acc = copy(parser = parser.switch)
+      def switchHandler: Acc = copy(handler = handler.switch)
 
       def append(line: String): Acc = {
-        val (l, c) = parser(line)
+        val (l, c) = handler(line)
         copy(content = content :+ l, codeAcc = c.fold(codeAcc)(codeAcc :+ _))
       }
 
@@ -466,11 +511,11 @@ case class REPLesent(
     val buildSeparator = "--"
     val codeDelimiter = "```"
 
-    val acc = (Acc() /: input) { (acc, line) =>
+    val acc = lines.foldLeft(Acc()) { (acc, line) =>
       line match {
         case `slideSeparator` => acc.pushSlide
         case `buildSeparator` => acc.pushBuild
-        case `codeDelimiter` => acc.switchParser
+        case `codeDelimiter` => acc.switchHandler
         case _ => acc.append(line)
       }
     }.pushSlide
@@ -521,7 +566,7 @@ case class REPLesent(
   }
   private def reloadDeck(): Unit = {
     val curSlide = deck.currentSlideNumber
-    deck = Deck(parseFile(input))
+    deck = Deck(parseSource(source))
     show(deck.jumpTo(curSlide))
   }
 
