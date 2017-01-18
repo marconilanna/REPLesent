@@ -101,7 +101,7 @@ Parameter | Type | Description | Default
 --- | --- | --- | ---
 `width` | `Int` | Terminal width in columns | `0` (Unix: autodetect, Windows: 80)
 `height` | `Int` | Terminal height in rows | `0` (Unix: autodetect, Windows: 25)
-`input` | `String` | The path to the presentation file | `"REPLesent.txt"`
+`source` | `String` | The path to the presentation file | `"REPLesent.txt"`
 `slideCounter` | `Boolean` | Whether to show the slide number | `false`
 `slideTotal` | `Boolean` | Whether to show the total number of slides | `false`
 `intp` | | A hook to the Scala REPL | No default, use magic value `$intp`
