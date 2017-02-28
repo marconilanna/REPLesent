@@ -246,7 +246,7 @@ case class REPLesent(
 
     private lazy val emojis: Map[String, String] = {
       Try {
-        val emoji = io.Source.fromFile("emoji.txt").getLines
+        val emoji = scala.io.Source.fromFile("emoji.txt").getLines
         emoji.map { l =>
           val a = l.split(' ')
           (a(1), a(0))
@@ -383,10 +383,10 @@ case class REPLesent(
             .list
             .sorted
             .filter(_.endsWith(".replesent"))
-            .flatMap { name => io.Source.fromFile(new File(pathFile, name)).getLines }
+            .flatMap { name => scala.io.Source.fromFile(new File(pathFile, name)).getLines }
             .toIterator
         } else {
-          io.Source.fromFile(path).getLines
+          scala.io.Source.fromFile(path).getLines
         }
       )
       parse(lines)
