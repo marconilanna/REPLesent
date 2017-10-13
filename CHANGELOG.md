@@ -1,7 +1,17 @@
 # Change Log
 
 ## [Unreleased][unreleased]
-- Added the "redraw" command, to show the current build/slide again
+
+## [1.2] - 2017-10-13
+### Added
+- `z` command: redraw the current build/slide (thanks @noelmarkham)
+- `y` command: reload slide file from disk (thanks @Krever)
+- A handful of improvements (thanks @blast-hardcheese)
+    - Multi-file support
+    - Syntax highlighting plug-in for vim
+### Changed
+- Syntax highlighting tweaks
+- Update dependencies: Scala 2.12.3, Java 8, sbt 1.0.2, etc.
 
 ## [1.1] - 2015-02-25
 ### Added
@@ -22,7 +32,7 @@
 
 ## [0.8] - 2015-02-17
 ### Added
-- Horizontal ruler support
+- Horizontal ruler support (thanks @daviscabral)
 
 ## [0.7] - 2015-02-16
 ### Added
@@ -57,7 +67,8 @@
 - Margin (border) configuration
 - Tutorial / sample slideshow
 
-[unreleased]: https://github.com/marconilanna/REPLesent/compare/v1.1...HEAD
+[unreleased]: https://github.com/marconilanna/REPLesent/compare/v1.2...HEAD
+[1.2]: https://github.com/marconilanna/REPLesent/compare/v1.1...v1.2
 [1.1]: https://github.com/marconilanna/REPLesent/compare/v1.0...v1.1
 [1.0]: https://github.com/marconilanna/REPLesent/compare/v0.9...v1.0
 [0.9]: https://github.com/marconilanna/REPLesent/compare/v0.8...v0.9
