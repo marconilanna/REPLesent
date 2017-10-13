@@ -17,7 +17,7 @@ name := "REPLesent"
 
 version := "1.1"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.12.3"
 
 scalaSource in Test := baseDirectory.value / "test"
 
@@ -29,7 +29,7 @@ scalacOptions ++= Seq(
   , "-feature"                // Emit warning and location for usages of features that should be imported explicitly
 //  , "-language:_"             // Enable or disable language features (see list below)
 //  , "-optimise"               // Generates faster bytecode by applying optimisations to the program
-  , "-target:jvm-1.7"         // Target platform for object files
+  , "-target:jvm-1.8"         // Target platform for object files
   , "-unchecked"              // Enable additional warnings where generated code depends on assumptions
 // Doesn't play well with ScalaTest
 //  , "-Xdev"                   // Indicates user is a developer - issue warnings about anything which seems amiss
@@ -77,12 +77,9 @@ unsound-match              Pattern match may not be typesafe
 */
 
 libraryDependencies ++= Seq(
-    "org.scala-lang"  % "scala-compiler" % "2.11.7" % Compile
-  , "org.scalatest"  %% "scalatest"      % "2.2.6"  % Test
+    "org.scala-lang"  % "scala-compiler" % "2.12.3" % Compile
+  , "org.scalatest"  %% "scalatest"      % "3.0.4"  % Test
 )
-
-// Improved incremental compilation
-incOptions := incOptions.value.withNameHashing(true)
 
 // Improved dependency management
 updateOptions := updateOptions.value.withCachedResolution(true)
