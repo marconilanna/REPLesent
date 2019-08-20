@@ -1,6 +1,7 @@
 REPLesent
 =========
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/9f19df3886ba44b79285ab37ac9dabdd)](https://app.codacy.com/app/marconilanna/REPLesent?utm_source=github.com&utm_medium=referral&utm_content=marconilanna/REPLesent&utm_campaign=Badge_Grade_Dashboard)
 [![Build Status](https://travis-ci.org/marconilanna/REPLesent.svg)](https://travis-ci.org/marconilanna/REPLesent)
 [![Codacy Badge](https://www.codacy.com/project/badge/2ec4acaf2e424baab3d0cb53d20d9df9)](https://www.codacy.com/public/marconilanna/REPLesent)
 
