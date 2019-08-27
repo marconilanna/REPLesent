@@ -104,6 +104,7 @@ Parameter | Type | Description | Default
 `source` | `String` | The path to the presentation file | `"REPLesent.txt"`
 `slideCounter` | `Boolean` | Whether to show the slide number | `false`
 `slideTotal` | `Boolean` | Whether to show the total number of slides | `false`
+`padNewline` | `Boolean` | Render a blank line at the bottom of the terminal to reduce visual noise when switching slides | `false`
 `intp` | | A hook to the Scala REPL | No default, use magic value `$intp`
 
 ### Navigation commands
