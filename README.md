@@ -141,7 +141,7 @@ Command | Description
 --- | ---
 `<<` | Left-flushed text
 `<` | Left-aligned text
-`|` | Centered text
+`\|` | Centered text
 `>` | Right-aligned text
 `>>` | Right-flushed text
 
