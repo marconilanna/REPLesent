@@ -359,6 +359,7 @@ case class REPLesent(
     |  next          n      >     go to next build/slide
     |  previous      p      <     go back to previous build/slide
     |  redraw        z            redraw the current build/slide
+    |  reload        y            reload the slides from file
     |  Next          N      >>    go to next slide
     |  Previous      P      <<    go back to previous slide
     |  i next        i n          advance i slides
